@@ -1,0 +1,847 @@
+10246 0x080816ec 0x080816ec 5    6            ascii   error
+10385 0x08083468 0x08083468 13   14           ascii   Error:%s,%d\r\n
+10388 0x080834c0 0x080834c0 13   14           ascii   Error:%s,%d\r\n
+10392 0x0808355c 0x0808355c 13   14           ascii   Error:%s,%d\r\n
+10395 0x080835fc 0x080835fc 13   14           ascii   Error:%s,%d\r\n
+10397 0x08083678 0x08083678 13   14           ascii   Error:%s,%d\r\n
+10402 0x0808372c 0x0808372c 13   14           ascii   Error:%s,%d\r\n
+10405 0x08083810 0x08083810 13   14           ascii   Error:%s,%d\r\n
+10411 0x08083904 0x08083904 13   14           ascii   Error:%s,%d\r\n
+10413 0x08083970 0x08083970 13   14           ascii   Error:%s,%d\r\n
+10420 0x08083ae4 0x08083ae4 13   14           ascii   Error:%s,%d\r\n
+10422 0x08083b44 0x08083b44 13   14           ascii   Error:%s,%d\r\n
+10427 0x08083bfc 0x08083bfc 13   14           ascii   Error:%s,%d\r\n
+10434 0x08083cb0 0x08083cb0 13   14           ascii   Error:%s,%d\r\n
+10467 0x08084300 0x08084300 13   14           ascii   Error:%s,%d\r\n
+10470 0x080843e4 0x080843e4 13   14           ascii   Error:%s,%d\r\n
+10477 0x08084578 0x08084578 13   14           ascii   Error:%s,%d\r\n
+10480 0x08084630 0x08084630 13   14           ascii   Error:%s,%d\r\n
+10484 0x080847c4 0x080847c4 13   14           ascii   Error:%s,%d\r\n
+10488 0x080848c0 0x080848c0 13   14           ascii   Error:%s,%d\r\n
+10490 0x08084918 0x08084918 13   14           ascii   Error:%s,%d\r\n
+10494 0x080849ac 0x080849ac 13   14           ascii   Error:%s,%d\r\n
+10497 0x08084af8 0x08084af8 13   14           ascii   Error:%s,%d\r\n
+10501 0x08084c18 0x08084c18 13   14           ascii   Error:%s,%d\r\n
+10505 0x08084d5c 0x08084d5c 13   14           ascii   Error:%s,%d\r\n
+10512 0x08084eb0 0x08084eb0 13   14           ascii   Error:%s,%d\r\n
+10514 0x08084f54 0x08084f54 13   14           ascii   Error:%s,%d\r\n
+10520 0x08085050 0x08085050 13   14           ascii   Error:%s,%d\r\n
+10530 0x0808510d 0x0808510d 18   19           ascii   send_error_message
+10534 0x08085162 0x08085162 22   23           ascii   check_security_protect
+10538 0x0808519f 0x0808519f 22   23           ascii   check_process_overtime
+10559 0x08085353 0x08085353 26   27           ascii   check_charing_power_failed
+10583 0x0808553f 0x0808553f 31   32           ascii   cut_check_near_station_overtime
+10643 0x08085a83 0x08085a83 22   23           ascii   is_on_station_overtime
+10650 0x08085b13 0x08085b13 15   16           ascii   ch_temp_protect
+10653 0x08085b50 0x08085b50 18   19           ascii   process_error_init
+10654 0x08085b63 0x08085b63 17   18           ascii   process_error_run
+10657 0x08085b99 0x08085b99 18   19           ascii   get_error_str_code
+10740 0x08086411 0x08086411 31   32           ascii   set_run_first_trim_failed_count
+10741 0x08086431 0x08086431 24   25           ascii   set_run_ota_failed_count
+10887 0x080871c9 0x080871c9 29   30           ascii   bdport_send_overtime_callback
+10888 0x080871e7 0x080871e7 32   33           ascii   bdport_receive_overtime_callback
+10903 0x0808734b 0x0808734b 30   31           ascii   dpport_heart_overtime_callback
+10916 0x08087492 0x08087492 33   34           ascii   ledport_receive_overtime_callback
+10978 0x08087935 0x08087935 23   24           ascii   security_password_error
+10981 0x0808798c 0x0808798c 20   21           ascii   display_error_screen
+10997 0x08087acd 0x08087acd 18   19           ascii   display_note_error
+11287 0x0808b134 0x0808b134 7    8            ascii   trapped
+1156  0x0800ce74 0x0800ce74 6    7            ascii   ERROR!
+1157  0x0800ce7c 0x0800ce7c 8    9            ascii   errorLog
+1896  0x08015ea6 0x08015ea6 14   15           ascii   \e[41mFAIL\e[00m
+1910  0x08015fd4 0x08015fd4 9    11           ascii    Failures
+4580  0x0803bef0 0x0803bef0 10   11           ascii   error_code
+5808  0x080497fe 0x080497fe 40   41           ascii   \b\bu[\b\b..\src\app\process\process_error.c
+5809  0x08049828 0x08049828 5    6            ascii   error
+7147  0x0805a548 0x0805a548 18   19           ascii   BATTERY_TYPE_ERROR
+8292  0x08068b5c 0x08068b5c 38   39           ascii   P[\b\b..\src\app\process\process_error.c
+8293  0x08068b84 0x08068b84 5    6            ascii   error
+8305  0x08069024 0x08069024 38   39           ascii   c[\b\b..\src\app\process\process_error.c
+8306  0x0806904c 0x0806904c 5    6            ascii   error
+8501  0x0806bfa4 0x0806bfa4 13   14           ascii   Error:%s,%d\r\n
+8507  0x0806c0b0 0x0806c0b0 13   14           ascii   Error:%s,%d\r\n
+8512  0x0806c12c 0x0806c12c 13   14           ascii   Error:%s,%d\r\n
+8520  0x0806c2b8 0x0806c2b8 13   14           ascii   Error:%s,%d\r\n
+9062  0x08072f87 0x08072f87 6    7            ascii    error
+9456  0x080778a8 0x080778a8 16   17           ascii   ota_failed_count
+action count=%d error
+alloc_pnt_memory failed
+all robot shape parameter failed
+all robot type parameter failed
+All sector header check failed. Set it to default.\n
+an ENV (%.*s) which has changed value failed. Now will recovery it.\n
+app version failed
+auto poweroff value =%d error, manual set enable
+auto,schedule number=%d error
+autozone point failed
+avg heading value=%d error
+avg pitch value=%d error
+avg roll value=%d error
+avg speed=%d<%d, stall
+axes failed
+back hit and back distance is too short = %d, change to error
+back lift error, change to error trapped
+backup data failed
+back wheel stall, blade brake and escape
+battery cell message error
+battery charging times failed=%d
+battery cmd failed, cansel cmd=%d
+battery dischare times failed=%d
+battery health=%d failed
+battery health failed=%d
+battery id failed=%d
+battery lower=%dmV, cell minimum=%dmV protect, power off
+battery pack message error
+battery percent by last power off time is error, current=%d, last=%d
+battery type error
+battery type error, cap=%d, s=%d, p=%d
+battery type, use default
+bdboard hardware version failed
+bdboard software version failed
+bdboard version failed
+bd cycle overtime
+bd cycle overtime, leave border
+bd cycle undealed lift
+bd cycle undealed slope
+bdport driver failed
+bdport init task failed
+bdport receive message failed
+bdport send message failed
+bdport send string overtime
+bdport service failed
+blade brake failed
+blade but in station, change to error
+blade but stall, reverse blade direction
+blade,but updown, brake and goto error updown
+blade diameter failed=%d
+blade direction failed
+blade info, but get failed
+blade info failed
+blade info failed, err=%d
+blade lift, change to error lift
+blade motor polar=%d value error
+blade motor polar failed=%d
+blade service failed
+blade slope, change to error updown
+blade stall and resevere overtime=%d, change to error blade block
+blade stall and resevere overtime=%d, turn to leave
+blade stall and resevere overtime=%d, turn to step random move to escape
+bl failed, err erase=%d, write=%d\n
+block overtime
+bms enable charge current=%d failed
+bms service failed
+bms task failed
+board can not receive message error
+bootloader crc failed, reset=%d, size =%d, crc=%d
+bootloader error, size len=%d, size crc=%d
+bootloader failed=%d, and reset update failed=%d, crc=%d
+bootloader failed=%d, crc=%d
+borad version error
+border finish undealed situation
+border get dir
+border message error overtime
+border no signal error
+border overtime, blade brake and wait
+border overtime ,cycle right to leave
+border overtime, left cycle
+border overtime, right cycle
+border overtime, trap error
+border sensor no signal, change to error
+border service failed
+border situation undealed
+border undealed situation = %d
+brake overtime, continue front
+but bat health can not discharger, change to error
+but near station overtime, blade brake, back cycle left, angle=%d
+but unreach border overtime, back cycle left, angle=%d
+calculate error
+calculte flag is not true overtimes
+calibrate connect failed
+calibration state =%d error
+call stack has an error
+Can't enable write status.
+Can't read JEDEC basic flash parameter header.
+Can't read SFDP header.
+capacity error=%d
+cfgstr failed=%d
+changed, set ota flag failed
+changed, set ota update because last time failed
+charge overtime
+charge overtime, goto error
+charger error
+check error: app CRC: 0x%08x , get CRC : 0x%08x
+check error=%d
+check error state =%d
+check file complete failed crc1:0x%x crc2:0x%x
+check safety error=%d
+check safety failed, border sinal not correct
+cjson config data failed
+cjson value error
+close loop failed, loop gap dis %d, border len %d loop gap thrsld %d
+close loop failed, parameter is illegal
+cmd failed
+cmd get failed
+cmd overtime,dma error
+cmd task overtime
+code is not found
+command, but battery singal charger protect, and battery volate low=%dmV
+command, but no border, change to error
+command, but outof border, change to error
+command but safety check error %s
+command error = %d
+command service failed
+communicate failed
+complete but still hit, change to error hit
+config 0 failed
+config 1 failed
+config 2 failed
+config 3 failed
+config 4 failed
+config 5 failed
+config data error=%d
+config error, enable=%d, auto=%d
+config json string failed
+config run failed
+config service failed
+config string len=0, failed
+config version failed
+connect error, crc value=%d, receive crc=%d
+connect failed
+connect failed by current=%d too high, change to error
+connect failed by current=%d too small, close wl,back to reconnect
+connect failed by current too small, back to reconnect
+connect failed by not in station, back to reconnect
+connect failed by not in station, close wl,back to reconnect
+connect failed, crc value=%d, receive crc=%d
+connect failed over times, change to error
+connect service failed
+control mutex failed
+crc failed, close bootloader update
+create failed
+creep motor polar failed=%d
+current=%d to low, change to error, vol=%d, temp=%d
+current to high=%d, goto error
+current user schedule failed
+current user schedule work length failed
+cut area =%d failed
+cut max seconds=%d failed
+cut max time=%d seconds, min=%d, last min=0 error
+cut max time failed=%d
+cut min seconds=%d failed
+cut min time failed=%d
+cutting normal speed failed=%d
+cutting turbo speed failed=%d
+cycle finish
+cycle finish by border
+cycle finish by hit
+cycle finish by lift
+cycle finish by normal
+cycle finish by slope=%d
+cycle finish error
+data=%d
+data failed
+data flash failed
+data from fifo read reg failed=%d
+data from fifo set reg failed, pack count=%d, read count=%d
+data initial failed
+data length = 0 failed
+data length = %d too long failed
+dat driver private data failed
+= %d, border length=%d loop failed
+deal back border situation undealed
+deal overtime=%dms
+differ situation=%d
+dir =%d error
+display board message error overtime
+dock state failed
+dock value=%d
+dpboard hardware version failed
+dpboard software version failed
+dpboard version failed
+dpport init receive failed
+dpport init task failed
+dpport receive quequ failed
+dpport send lock mutex failed
+dpport send log quequ failed
+dpport send log task failed
+dpport send quequ failed
+dpport send task failed
+driver init error
+driver init failed
+driver initial failed
+driver initial state error
+driver init overtime
+driver open failed
+driver set time failed
+=%d too small, disable hit trap and narrow passage
+=%d too small, enable hit trap but disable narrow passage
+easyflash error
+enable auto poweroff value error=%d
+enable check charging current value=%d error
+enable=%d error value
+enable param=%d error
+enable value=%d
+enalbe=%d value error, set enable
+end minutes=%d, day=%d
+enqueue failed
+env error, do not backup
+env failed res1:%d res2:%d
+ENV isn't initialize OK.\n
+error
+error, angle could not change to tick
+error command, change to idle
+error=%d
+error led enable value=%d
+error overtime, and battery voltage low,power off
+error situation=%d
+error,sum_a:%x,sum_b:%x,len=%d
+error ultrasonic enable value=%d
+error,wait over time,power off
+exhibition param failed
+external config  failed
+failed
+Failed!
+failed at 0x%08x\n
+failed, bdport state=%d, dpport state=%d, ledport state=%d
+failed ,mark: %d firmwares :%d
+failed\n
+fault is caused by failed vector fetch
+fault is caused by stacking error
+fault is caused by unstacking error
+file parse error
+file read error
+find border failed, continue cutting
+find border failed, outof area
+find on border failed,heading=%d, try to differ
+find on border failed,heading=%d,try to differ
+finish_recording_map_pnt failed
+finish, still hit, change to error hit
+finish, still slope, change to error slope over
+firmware fail
+firmware info error
+first trim failed count failed=%d
+fitted line point failed
+flag=%d,ota failed=%d,cut max sec=%d,min=%d,current minutes=%d,total minutes=%d,area=%d,backup=%d,misland=%d, sisland=%d,cut area=%d,work min=%d,act=%d,charge min=%d,act=%d,trim failed=%d,add=%x
+flag failed, change to has new
+Flash address is out of bound.
+flash already initialed, version=%d,sn=%d,point num=%d, failed=%d
+Flash chip erase SPI communicate error.
+Flash device reset failed.
+Flash erase SPI communicate error.
+flash error
+Flash wait busy has an error.
+Flash write SPI communicate error.
+flash written error, error %d
+format:%s
+front by error situation=%d
+front overtime, in border ,change to cutting
+front undealed situation
+front undealed situation=%d
+front undealed situation lift
+front undealed situation slope
+fuse task failed
+get cmd failed
+get failed, reload
+has assert failed at %s.
+has assert failed at %s:%ld.
+has assert failed at %s:%ld.\n
+heading value=%d error
+health singal protect, change to error process
+highspeed loop service failed
+highspeed loop task failed
+hit default current abnormal=%d, set default current
+hit>%d over time, trapped
+hit enalbe=%d error, set enable
+hit env failed, err=%d
+hit overtime and in border, cycle right to leave
+hit overtime on border clockwise, cycle right to leave
+hit overtime outof border, back cycle right
+hit overtime, set default current
+hit service failed
+hour and minute failed
+html><html><head><meta charset="utf-8"><title>Mower Log</title><style>table,th,td {border: 1px solid black; border-collapse: collapse; padding-left: 10pt; padding-right: 10pt; text-align: center;}h1 {text-align: center;}.topIcon {width: 0;height: 0;border-right: 20px solid transparent;border-bottom: 20px solid #000;border-left: 20px solid transparent;display: inline-block;}.box-container {width: 55px;height: 37px;position: fixed;bottom: 37px;text-align: center;right: 16px;padding-top: 5px;background-color: #fff;border: 1px solid #00000012;text-align: center;cursor: pointer;}a{color:blue; cursor: pointer;}</style></head><script language='JavaScript' type='text/javascript'>const lth = '<tr><th>Stamp</th>' + '<th>Text</th></tr>'; let idRecord = undefined; function pre(x) { let removeIdElement = x.children[0].cloneNode(true);let innerTime = removeIdElement.textContent.substring( removeIdElement.textContent.indexOf('[')); innerTime = innerTime.replaceAll('[', '').replaceAll(']', ''); return innerTime; } function topFunction() { document.body.scrollTop = 0; document.documentElement.scrollTop = 0; } function d2t(dt, x, d) { let tempContent = x.childNodes[1].textContent.substring( x.childNodes[1].textContent.indexOf(')') + 1); if (x.className === 'errorLog') { return ('<tr><td>' + dt + '</td><td>' + '<b>' + tempContent + '</b>' + '</td><td><a onclick=highLight(' + d + ')>Jump</a></td></tr>'); } else { return ('<tr><td>' + dt + '</td><td>' + tempContent + '</td><td><a' + ' onclick=highLight(' + d + ')>Jump</a></td></tr>'); } } function t2i(t) { document.getElementById('info').innerHTML = '<table>' + t + '</table>'; } function heightToTop(ele) { let root = document.body; let height = 0; do { height += ele.offsetTop; ele = ele.offsetParent; } while (ele !== root); return height - 200; } function highLight(element) { console.log('sdasd', element); if (idRecord) { document.getElementById(idRecord).style.background = ''; } window.scrollTo({ top:heightToTop(element), behavior:'smooth' }); idRecord = element.getAttribute('id'); element.style.background = 'yellow'; } function eventClicked(type) { var txt = lth; if (!type) { document .querySelectorAll('.eventLog, .cutLog, .batLog, .errorLog') .forEach((x) => { txt = txt + d2t(pre(x), x, x.getAttribute('id')); }); } else { document .querySelectorAll('.' + type) .forEach((x) => { txt = txt + d2t(pre(x), x, x.getAttribute('id')); }); } t2i(txt); } function infoHide() { document.getElementById('info').innerHTML = ''; }</script><body><h1>Mower Log</h1><div class="box-container" onClick="topFunction()"><div title="go to top" class="topIcon"></div> </div><div id="mark" style="background-color:beige; margin-top:2em; margin-bottom: 1em; padding: 1ex;"><b>List </b><button onclick="eventClicked()">Total</button>&nbsp; <b> Summary </b><button onclick="eventClicked('eventLog')">Events</button><button onclick="eventClicked('cutLog')">Cut</button><button onclick="eventClicked('batLog')">Chargings</button><button onclick="eventClicked('errorLog')">Error</button><button onclick="infoHide()">Hide</button><div id="info" style='margin-top: 6pt;'></div></div>
+ICM whoami value ERROR :  bad WHOAMI value. Got 0x%02x (expected: 0x%02x)
+ICM whoami value ERROR : failed to read Icm426xx whoami value.
+ic temp failed
+info checksum failed ,len = %d
+init error =%d
+init failed
+init pri data failed
+input error password count=%d# over times, lock and wait
+into dock and battery singal charge protect, voltage low=%dmV
+into dock,battery singal charger protect,voltage low=%dmV, change to error battery health
+inv agm algo failed=%d
+inv device failed=%d
+last battery percent failed=%d
+last poweroff date failed=%d
+leave front lift situation
+leave front stall situation
+led auto failed, err=%d
+ledboard enable failed
+ledboard hardware version failed
+ledboard software version failed
+ledboard version failed
+led config failed, error=%d
+led message error overtime
+ledport driver failed
+ledport init task failed
+ledport send string overtime
+ledport service failed
+led service failed
+led str failed, err=%d
+left motor brake failed
+left motore direction failed
+left motor polar=%d value error
+left motor speed failed
+left no signal right in, undealed
+left, on border not porfit but overtimes, front
+left time error,delay tick=%d, count=%d
+left wheel speed queue failed
+len=0 failed
+length is 0, set failed
+lift enable=%d value error
+lift service failed
+limit overtime error
+line remerge pnt seqence failed
+line:%s
+log error
+log failed
+log malloc dealed message failed
+log malloc temp send string failed
+log overtime,dma error
+log task overtime
+loop failed, save failed count=%d failed
+loop failed, save failed count=%d success
+loop service init failed
+loop service run failed
+low=%dmV, vol state=%d, on shedule, but battery singal charger protect
+mac address failed
+Main stack(%08x) was overflow
+malloc failed
+management fault is caused by stacking error
+management fault is caused by unstacking error
+map data failed, because flash id=%d,%d,%d,%d error
+map data num=0, failed
+map_data_pri failed
+map failed, error %d
+map flash data failed
+map info failed=%d
+map task failed
+max island area=%d failed=%d
+mboard bootloader update flag failed
+mboard bootloader version failed
+mboard hardware version=%d failed
+mboard hardware version=%d, version error
+mboard hardware version failed
+mboard software version failed
+mems acc cfg failed
+mems axis map cfg failed
+mems axis sign failed
+mems data failed=%d, reset success
+mems failed
+mems gry cfg failed
+mems id failed
+mems init task failed
+mems opr failed
+mems opr mode =%d, reconfig bno055 failed
+mems page 0 failed
+mems page failed
+mems power mode failed
+mems stable value failed
+mems tempature failed
+message parse error=%s, len=%d
+message parse len=%d, error=%s
+message parse len=%d,error=%s,count=%d
+mode=%d error
+mode, disable hit trap and check narrow
+model=%d error
+model error=%d
+model error, disable
+model error = %d, set model=%d
+model, unfreeze security protect,  failed
+month and day failed
+motor driver error
+motor driver init failed
+motor_spi_mutex failed
+movebase pri data failed
+movebase service failed
+movement=%d
+movement error=%d
+movement model
+movement model=%d
+movement model input param error
+movement srv failed
+movement srv pri data failed
+multitrack count failed=%d
+multizone border length failed
+multizone_ex failed
+multizone ex failed=%d
+multizone failed
+multizone failed, because get json null
+multizone failed=%d
+multizone parameter error, product multizone number=%d
+multizone service failed
+name failed
+name failed, because get json null
+noborder error, change to process=%d
+not receive display board message error
+not receive led board message error
+not receive sensor board message error
+obstacle state=%d error
+obstacle unnormal overtime, trap
+of border sensor failed
+on overtime=%d, power off
+open error
+ore error count=%d
+osc tolerance =%d error
+ota date failed
+ota date failed=%d
+ota failed and in station, change to idle
+ota failed  and not in station, wait to input password
+ota failed count=%d failed
+ota failed count failed=%d
+ota failed, now in station, change to idle
+ota failed overtimes=%d# do not ota again,in station, change to idle
+ota failed overtimes=%d# do not ota again,not in station, wait to input password
+ota failed,wait for next time, not in station, wait to input password
+ota flag data error=%d
+ota flag=%d failed
+ota flag failed
+ota flag failed, because get json null
+ota flag new temp failed
+ota flag none failed
+ota info fail
+ota update flag failed
+overtime
+overtime and in border, cycle right angle=%d to escape
+overtime, blade brake and escape
+overtime but battery full, current=%d, vol=%d, temp=%d
+overtime, change to find border
+overtime, current=%d, vol=%d, temp=%d
+overtime, current tick=%d, last=%d
+overtime, cycle right to find border
+over time error
+overtime, refind border
+overtime, refront
+parse failed
+password enable input failed=%d
+password error count failed=%d
+perimeter=%d, redution ratio=%g error
+pitch=%d error
+pitch value=%d error
+platform=%d
+platform =%d error
+point percent error, 0=%g, 1=%g
+port initial failed
+port initial overtime
+port service connect failed
+port service error
+port service failed
+port service get failed
+port service init failed
+port state=%d, error=%d
+power mode failed
+power model is error=%d
+power on minutes failed
+power service failed
+pri bdport data failed
+pri_blade_drv_data failed
+pri ledport data failed
+pri_left_drv_data failed
+pri_right_drv_data failed
+process_brd_pnt_queue failed
+process manager failed!
+process manager_srv failed
+product area limit enable =%d value error
+product auto poweroff =%d value error
+product blade check =%d value error
+product border enable =%d value error
+product enable area limit failed
+product enable auto poweroff failed
+product enable blade check failed
+product enable border failed
+product enable communication failed=%d
+product enable failed=%d
+product enable follow border smooth failed
+product enable fslip failed
+product enable gps failed
+product enable hit failed
+product enable lboard_en failed
+product enable ledboard failed=%d
+product enable led failed
+product enable lift failed
+product enable manager failed
+product enable map update en failed
+product enable mems failed
+product enable module failed
+product enable multi track=%d success, but multitrack count set=0 failed
+product enable multi track failed
+product enable multizone failed=%d
+product enable password failed
+product enable quick dock failed
+product enable rain failed
+product enable rtt failed
+product enable schedule failed=%d
+product enable speaker failed
+product enable ultrasonic failed
+product enable wireless charging failed=%d
+product follow border smooth =%d value error
+product hit enable =%d value error
+product lift enable =%d value error
+product map update enable =%d value error
+product mems enable =%d value error
+product multi track enable =%d, but set multitrack count=0 failed
+product multi track enable =%d value error
+product quick dock enable =%d value error
+product rtt enable =%d value error
+product shape parameter failed
+product software version=%d failed
+product software version failed
+product speaker =%d value error
+product version=%d < %d error
+product verson version failed
+product wireless charging =%d value error
+program checksum failed ,len = %d
+program failed
+program failed!
+pwd error
+pwd failed
+pwd number failed
+pwd old failed, because get json null
+pwd old failed, because input old password error
+pwd uncorrect=%d overtimes, reset and lock
+queue create failed
+rain config failed
+rain service failed
+rain set failed
+ram initial failed
+Read address bytes error!
+read error
+Read flash device JEDEC ID error.
+Read SFDP parameter header information failed. The %s is not support JEDEC SFDP.
+receive message head callback failed, head=%d
+receive overtime
+recieve message failed
+recorder map flag  =%d failed
+region=%d value error
+reset flag value=%d error
+return failed ,len = %d
+reverse overtime=%d, front
+right motor brake failed
+right motore direction failed
+right motor polar=%d value error
+right motor speed failed
+right, on border not porfit but overtimes, front
+right wheel speed queue failed
+robot area failed=%d
+robot available failed=%d
+robot battery initial failed
+robot border sensor disconnected
+robot display board disconnected
+robot mac address failed
+robot motherboard flash initial failed
+robot name failed
+robot name failed=%d
+robot name =%s failed
+robot platform=%d
+robot platform failed=%d
+robot platform when avoid obstacle
+robot redution_ratio failed=%d
+robot run parameter failed
+robot %s
+robot sn failed=%d
+robot stored data initial failed
+robot tilt sensor initial failed
+robot type failed
+robot ultrasonic board disconnected
+robot wheel distance =%dmm failed, err=%d
+robot wheel perimter failed=%d
+roll slip value=%d error
+roll value=%d error
+running info failed=%d
+run on minutes failed
+run param failed
+%s 4-Byte addressing mode failed.
+safety check error=%d
+safety password
+schedule error
+schedule error=%d, use default 1 time
+schedule error schedule num=%d
+schedule failed
+schedule failed=%d
+schedule, goto departure but safety check error=%d
+schedule value=%d
+second island area=%d failed=%d
+Sector header check failed. Format this sector (0x%08x).\n
+selftest error
+send_battery_state_cmd=%d
+send log error!
+send map data point failed
+send message error
+send message error!
+send overtime
+send receive error
+send %s overtime
+send str failed
+send string length = 0 failed
+send string length = %d too long failed
+sensitivity=%d error
+serial unnormal hit=%d, trapped
+service error
+service get failed
+service init error
+service init failed
+service receive overtime
+service run failed
+set firmware number failed ,len = %d
+set flash info failed
+set mark failed ,len = %d
+set mode checksum failed ,len = %d
+setp error=%d
+set schedule day=%d value error
+set service error
+set service get failed
+set service init failed
+set service run failed
+set ver checksum failed ,len = %d
+%s flash device is initialize fail.
+simple schedule day failed
+simple schedule=%d failed
+singal protect, can not discharger, total voltage=%dmV
+situaion
+situation
+situation = %d
+situation=%d
+situation stall
+situation ultsonic
+size error,type:%d size:%d ver:%d
+slip enable=%d value error
+slip overtime, back front
+slip overtime, cycle dir=%d, border left area=%d, right=%d
+slip overtime error
+slip overtime, in border cycle dir=%d, angle=%d
+slip overtime, left in right out, cycle left
+slip overtime, left out right in, cycle right to find border
+slip overtime, outof border cycle dir=%d
+slip service failed
+slope service failed
+sn failed
+sn failed, because get json null
+sn=%s failed
+software version failed
+speed data queue failed
+speed model=%d
+speed model error
+stall but not in border, escape
+stall, escape
+stall finish undealed situation
+stall recover
+start blade failed=%d
+start point failed
+start time failed
+state check init failed
+state data error=%d
+state=%d error
+state error=%d
+state get error
+station hit overtime,back distance = %dmm
+station overtime, back to reconnect
+station overtime, but speed model=%d
+station overtime, trap error
+station state=%d, err=%d value error
+station type=%d
+station type=%d value error
+station type error=%d
+station type failed=%d
+step = %d
+step=%d
+step error = %d
+step input
+string failed
+string length = 0 failed
+string length = %d too long failed
+string malloc dealed message failed
+task stop wait failed
+tdk mems failed
+temperature low =%d%c%c%c, change to error
+test faile=%d
+test server add=%d failed
+test server address failed
+test server address failed, err=%d
+The ENV (@0x%08X) CRC32 check failed!\n
+The ENV name length is more than %d\n
+The ENV size is too big\n
+The flash capacity is grater than 32 Gb/ 4 GB! Not Supported.
+The JEDEC basic flash parameter table length (now is %d) error.
+This reversion(V%d.%d) JEDEC basic flash parameter header is not supported.
+This reversion(V%d.%d) SFDP is not supported.
+Thread stack(%08x) was overflow
+time failed
+time failed, because get json null
+time no input, clear password error count
+times=%d overtimes, set=10
+time service failed
+time task failed
+to charging temp protect step
+to initialize Icm426xx., error=%d
+total running distance failed=%d
+trim failed, set recorder, old=%d
+trimming failed
+trimming failed because of lifted
+trimming failed because of unnormal situation
+trimming failed, check obstacle
+trimming failed over times
+trimming failed overtimes  because of lifted
+trimming failed overtimes because of unnormal situation
+trimming recorder failed
+tyep error=%d
+type=%d error
+type error
+type error=%d
+type param failed
+ult manual failed, err=%d
+ultrasonic cmd json error
+ultrasonic config failed, error=%d
+ultrasonic service failed
+ultrasonic state = %d
+ultrasonic state json error
+ult sen failed, err=%d
+ult sen value=%d
+Unable to get the main stack information, please check the configuration of the main stack
+undealed border situation, front refind border
+undealed border situation, refind border
+undealed hit situation, front refind border
+undealed lift
+undealed lift situation, front refind border
+undealed situation =%d
+undealed situation=%d, set normal
+undealed slope
+undealed slope situation, front refind border
+Uniform 4 KB erase supported information error.
+UNRECOVERED ERROR STATE.
+update flag failed, err=%d
+user enable password failed
+user enable password failed=%d
+user language failed
+user language failed=%d
+user password failed
+user password failed=%d
+user service failed
+value=%d error
+value error = %d
+voltage=%d, error
+voltage failed
+voltage high=%dmV and singal charge protect, change to idle
+voltage high=%dmV, change to error
+voltage low=%dmV, health singal discharger protect, and in station change to charging
+V%s is initialize fail.\n
+wait failed
+wait temp protect overtime, battery temp=%d
+wheel stall, back cycle left, angle=%d
+wheel stall, back cycle right, angle=%d
+wl_state failed
+wl station state=%d, err=%d value error
+work time failed
+write error
+Write_status register failed.
+year failed

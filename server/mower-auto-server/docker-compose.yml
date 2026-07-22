@@ -1,0 +1,27 @@
+# Оркестратор mower-auto: автоматический дамп + сниф.
+# Поднимается ХОТЬ ГДЕ (VPS или домашняя сеть) — ESP сама дозванивается сюда.
+#   docker compose up -d        # запустить
+#   docker compose logs -f      # смотреть прогресс (дамп/вердикт)
+# Файлы: ./out/mower-esp-<дата>.bin (дамп), ./out/sniff.log (сниф).
+#
+# Если ставишь в ДОМАШНЕЙ сети — пропиши IP этой машины в secrets.h прошивки
+# (SRV_HOST) и перешей ESP. Если на VPS пользователя (по умолчанию) — ничего не меняешь.
+
+services:
+  orchestrator:
+    image: python:3.12-slim
+    container_name: mower-orchestrator
+    restart: unless-stopped
+    ports:
+      - "7777:7777"   # data (мост UART)
+      - "7778:7778"   # control (P)
+      - "8080:8080"   # веб-дашборд
+    environment:
+      - DATA_PORT=7777
+      - CTRL_PORT=7778
+      - WEB_PORT=8080
+      - OUT=/out
+    volumes:
+      - ./out:/out
+      - ./orchestrator.py:/orchestrator.py:ro
+    command: bash -lc "pip install -q esptool && python /orchestrator.py"

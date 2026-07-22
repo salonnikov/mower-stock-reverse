@@ -1,0 +1,13 @@
+services:
+  mower-scraper:
+    image: python:3.12-slim
+    container_name: mower-scraper
+    restart: unless-stopped
+    network_mode: host          # нужен, чтобы видеть WireGuard-маршрут до 192.168.10.76
+    environment:
+      ESP: http://192.168.10.76/data
+      OUT: /logs/mower-session.log
+    volumes:
+      - ./scraper.py:/scraper.py:ro
+      - ./logs:/logs
+    command: python /scraper.py

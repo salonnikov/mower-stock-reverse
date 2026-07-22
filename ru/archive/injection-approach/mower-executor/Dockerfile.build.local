@@ -1,0 +1,8 @@
+# Локальный вариант build-образа: база = кэшированный python:3.12-slim
+# (обход недоступного docker.io для debian:12). Тот же ARM-тулчейн для `make fw`.
+FROM python:3.12-slim
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi \
+      build-essential make \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /w

@@ -1,0 +1,247 @@
+# ⚠️ DEPRECATED как «мозг». ESPHome НЕ тянет matched-filter приёма провода и
+# real-time управление моторами (см. docs/05 §E). Настоящий мозг — кастомная
+# C++-прошивка: firmware/README.md + firmware/src/main.cpp.
+# Этот файл оставлен ТОЛЬКО как быстрый стенд телеметрии (read-only) на время
+# написания C++-прошивки: посмотреть АКБ/токи/датчики в HA без подключения к моторам.
+#
+# ESP32 телеметрийный стенд для VILLARTEC MI 302 — ESPHome (read-only)
+# ВНИМАНИЕ: номера GPIO — ЗАГЛУШКИ. Заполнить после фазы 0 по signal-map.md.
+# Прошивать: esphome run mower.yaml  (в контейнере!)
+#
+# Режимы включения секций:
+#   - Фаза 1: sensor + binary_sensor (read-only телеметрия)
+#   - Фаза 2: switch (E-stop, кнопки), button, локальный E-stop в interval
+#   - Фаза 3: uart + gps + геозабор/антиугон
+# Безопасные дефолты: E-stop НЕ активен по умолчанию (нож разрешён только когда safe_ok).
+
+substitutions:
+  device_name: mower-mi302
+  geofence_lat: "55.751244"     # центр участка (станция) — заменить
+  geofence_lon: "37.618423"     # заменить
+  geofence_radius_m: "50"       # радиус гео-забора, м
+
+esphome:
+  name: ${device_name}
+  comment: "Smart brains for VILLARTEC MI 302"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+  level: INFO
+
+# ---- Связь: Wi-Fi + MQTT (контракт топиков см. docs/01-architecture.md) ----
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:                      # fallback-AP для настройки в поле
+    ssid: "${device_name}-setup"
+
+mqtt:
+  broker: !secret mqtt_broker
+  username: !secret mqtt_user
+  password: !secret mqtt_password
+  topic_prefix: mower/mi302
+  birth_message:
+    topic: mower/mi302/availability
+    payload: online
+  will_message:            # LWT: робот пропал → сервер сразу видит offline
+    topic: mower/mi302/availability
+    payload: offline
+  on_message:              # команды сервера → имитация штатных кнопок
+    - topic: mower/mi302/cmd/start
+      then:
+        - lambda: 'id(theft_armed) = false;'
+        - output.turn_on: out_btn_start
+        - delay: 200ms
+        - output.turn_off: out_btn_start
+    - topic: mower/mi302/cmd/stop
+      then:
+        - output.turn_on: out_btn_stop
+        - delay: 200ms
+        - output.turn_off: out_btn_stop
+    - topic: mower/mi302/cmd/home
+      then:
+        - output.turn_on: out_btn_home
+        - delay: 200ms
+        - output.turn_off: out_btn_home
+    - topic: mower/mi302/cmd/estop
+      then:
+        - lambda: 'id(safe_ok) = false;'
+        - output.turn_off: out_blade_enable
+
+# ---- Глобальные флаги состояния ----
+globals:
+  - id: safe_ok            # true = ножу разрешено крутиться
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: theft_armed        # антиугон взведён (робот не на станции и не косит по команде)
+    type: bool
+    restore_value: no
+    initial_value: "true"
+
+# ---- I2C для INA226 (ток/напряжение АКБ) ----
+i2c:
+  sda: GPIO21              # ЗАГЛУШКА
+  scl: GPIO22              # ЗАГЛУШКА
+  scan: true
+
+# ======================= ФАЗА 1: ТЕЛЕМЕТРИЯ =======================
+sensor:
+  - platform: ina226
+    address: 0x40
+    shunt_resistance: 0.002 ohm     # подобрать под шунт/модуль
+    max_current: 10 A
+    bus_voltage:
+      name: "Battery Voltage"
+      id: batt_voltage
+      state_topic: mower/mi302/battery/voltage
+      filters: [throttle: 10s]
+    current:
+      name: "Battery Current"
+      id: batt_current
+      state_topic: mower/mi302/battery/current
+      filters: [throttle: 1s]
+    power:
+      name: "Battery Power"
+
+  # % заряда из напряжения 5S Li-ion (грубо: 21.0В=100%, 15.0В=0%) — уточнить по разряду
+  - platform: template
+    name: "Battery Percent"
+    state_topic: mower/mi302/battery/percent
+    unit_of_measurement: "%"
+    update_interval: 10s
+    lambda: |-
+      float v = id(batt_voltage).state;
+      float p = (v - 15.0) / (21.0 - 15.0) * 100.0;
+      if (p < 0) p = 0; if (p > 100) p = 100;
+      return p;
+
+  - platform: wifi_signal
+    name: "WiFi RSSI"
+    state_topic: mower/mi302/wifi/rssi
+    update_interval: 30s
+
+  # --- ФАЗА 3: GPS (раскомментировать после установки модуля) ---
+  # - platform: gps
+  #   latitude:  { name: "GPS Lat", id: gps_lat }
+  #   longitude: { name: "GPS Lon", id: gps_lon }
+  #   satellites: { name: "GPS Sats" }
+  #   speed: { name: "GPS Speed", id: gps_speed }
+
+binary_sensor:
+  - platform: gpio
+    name: "Rain"
+    id: s_rain
+    pin: { number: GPIO34, mode: INPUT }      # ЗАГЛУШКА (входы 34-39 без подтяжки)
+    state_topic: mower/mi302/sensors/rain
+  - platform: gpio
+    name: "Lift"
+    id: s_lift
+    pin: { number: GPIO35, mode: INPUT }      # ЗАГЛУШКА
+    state_topic: mower/mi302/sensors/lift
+  - platform: gpio
+    name: "Tilt"
+    id: s_tilt
+    pin: { number: GPIO32, mode: INPUT }      # ЗАГЛУШКА
+    state_topic: mower/mi302/sensors/tilt
+  - platform: gpio
+    name: "Bump"
+    id: s_bump
+    pin: { number: GPIO33, mode: INPUT }      # ЗАГЛУШКА
+    state_topic: mower/mi302/sensors/bump
+  - platform: gpio
+    name: "Perimeter Inside"                  # с выхода компаратора приёмника
+    id: s_perimeter
+    pin: { number: GPIO25, mode: INPUT }      # ЗАГЛУШКА
+    state_topic: mower/mi302/perimeter/inside
+
+# ======================= ФАЗА 2: УПРАВЛЕНИЕ =======================
+# Выходы на опто-реле/MOSFET, имитирующие штатные кнопки (замыкание на GND).
+output:
+  - platform: gpio
+    id: out_blade_enable        # E-stop ножа: HIGH=разрешён, LOW=выключен (fail-safe)
+    pin: GPIO26                 # ЗАГЛУШКА
+  - platform: gpio
+    id: out_btn_start
+    pin: GPIO27                 # ЗАГЛУШКА
+  - platform: gpio
+    id: out_btn_stop
+    pin: GPIO14                 # ЗАГЛУШКА
+  - platform: gpio
+    id: out_btn_home
+    pin: GPIO12                 # ЗАГЛУШКА
+
+button:
+  - platform: template
+    name: "Start"
+    on_press:
+      - lambda: 'id(theft_armed) = false;'    # старт по команде = не угон
+      - output.turn_on: out_btn_start
+      - delay: 200ms
+      - output.turn_off: out_btn_start
+  - platform: template
+    name: "Stop"
+    on_press:
+      - output.turn_on: out_btn_stop
+      - delay: 200ms
+      - output.turn_off: out_btn_stop
+  - platform: template
+    name: "Home"
+    on_press:
+      - output.turn_on: out_btn_home
+      - delay: 200ms
+      - output.turn_off: out_btn_home
+  - platform: template
+    name: "E-STOP"
+    on_press:
+      - lambda: 'id(safe_ok) = false;'
+      - output.turn_off: out_blade_enable
+
+# (Команды cmd/* обрабатываются в основном блоке mqtt: → on_message, выше.)
+
+# ======================= БЕЗОПАСНОСТЬ + АНТИУГОН =======================
+# Локальный цикл: НЕ зависит от Wi-Fi/сервера. Решает про нож и угон сам.
+interval:
+  - interval: 200ms
+    then:
+      - lambda: |-
+          // --- Локальный E-stop ножа (fail-safe) ---
+          bool danger = id(s_lift).state || id(s_tilt).state;
+          // overcurrent ножа подключить, когда будет отдельный INA на нож:
+          // danger = danger || (id(blade_current).state > BLADE_MAX_A);
+          if (danger) {
+            id(safe_ok) = false;
+            id(out_blade_enable).turn_off();
+          } else {
+            id(safe_ok) = true;
+            // нож включаем только если штатная логика тоже «за» — здесь просто разрешаем питание
+            id(out_blade_enable).turn_on();
+          }
+
+  - interval: 1s
+    then:
+      - mqtt.publish:
+          topic: mower/mi302/state
+          payload: !lambda |-
+            if (id(s_lift).state) return "lifted";
+            if (id(batt_current).state < -0.2) return "charging";  // ток втекает в АКБ
+            if (id(batt_current).state > 0.5)  return "mowing";
+            return "idle";
+
+  # --- ФАЗА 3: антиугон по гео-забору (раскомментировать с GPS) ---
+  # - interval: 2s
+  #   then:
+  #     - lambda: |-
+  #         if (!id(theft_armed)) return;
+  #         float dlat = (id(gps_lat).state - ${geofence_lat});
+  #         float dlon = (id(gps_lon).state - ${geofence_lon});
+  #         // грубая оценка в метрах (1°≈111 км)
+  #         float dist = sqrt(pow(dlat*111000.0,2) + pow(dlon*111000.0*0.57,2));
+  #         if (dist > ${geofence_radius_m}) {
+  #           id(safe_ok) = false; id(out_blade_enable).turn_off();
+  #           // mqtt.publish alarm/theft с координатами
+  #         }

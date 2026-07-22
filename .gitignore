@@ -1,0 +1,31 @@
+# Session / OS junk
+.claude/
+.DS_Store
+
+# Secrets — never commit
+**/secrets.yaml
+**/secrets.h
+
+# Build artifacts (regenerated)
+.pio/
+**/.pio/
+**/build/
+firmware/mower-own/test-images/pi-stage/flash_*.cfg
+firmware/mower-own/test-images/pi-stage/perif_dump.cfg
+firmware/mower-own/test-images/*.map
+*.elf
+*.hex
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+
+# Server runtime data / logs
+server/mosquitto/data/
+server/mosquitto/log/
+server/sniff-dashboard/out/
+*.csv.gz
+
+# NOTE: unlike a build repo, this knowledge base intentionally TRACKS the
+# reverse-engineering deliverables under dist/ — the factory firmware dumps
+# (*.bin), the full disassembly (factory-full.asm) and the openocd flashers.

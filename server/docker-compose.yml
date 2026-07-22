@@ -1,0 +1,21 @@
+# У тебя УЖЕ есть Home Assistant — отдельный HA НЕ поднимаем.
+# Здесь оставлен ТОЛЬКО брокер MQTT, и то опционально:
+#   - Если в HA уже стоит add-on "Mosquitto broker" — этот файл не нужен вообще,
+#     просто используй встроенный брокер (порт 1883 на хосте HA).
+#   - Если HA в Docker (не HAOS) и брокера нет — подними Mosquitto отсюда:
+#       cd server && docker compose up -d
+#
+# Подключение робота описано в SETUP.md (этот каталог).
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mower-mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"          # MQTT
+      - "9001:9001"          # MQTT over WebSocket (для будущей PWA)
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log

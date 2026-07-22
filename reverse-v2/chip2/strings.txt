@@ -1,0 +1,215 @@
+08011cbb	 Terminal
+08011ccc	SEGGER
+080124bc	0123456789abcdef
+080124d0	0123456789ABCDEF
+08012c8b	 base voltage=%d
+08012ca0	..\src\platform\driver\driver_board_sensor\driver_bdsensor.c
+08012ce0	hr_bd
+08013720	get factory driver failed
+08013740	..\src\application\process_comm.c
+0801376f	 comm_task_init bd task wait failed
+08013800	comm_task
+08013810	create comm_task_init bd task failed
+0801383c	..\src\application\process_comm.c
+08013a7f	 left lifted
+08013a90	..\src\application\process_comm.c
+08013abc	both lifted
+08013ac8	right lifted
+08013ad8	lift none
+08013cd3	 malloc all sensor data failed
+08013cf8	..\src\application\process_deal_board.c
+08013d20	init_bd
+08014124	tag != ((void *)0)
+0801413b	 (%s) has assert failed at %s:%ld.
+08014160	..\src\platform\easylogger\elog.c
+08014484	level <= ELOG_LVL_VERBOSE
+080144b4	(%s) has assert failed at %s:%ld.
+080144d8	..\src\platform\easylogger\elog.c
+08014640	level <= ELOG_LVL_VERBOSE
+0801465f	 (%s) has assert failed at %s:%ld.
+08014684	..\src\platform\easylogger\elog.c
+08014700	level <= ELOG_LVL_VERBOSE
+0801471f	 (%s) has assert failed at %s:%ld.
+08014744	..\src\platform\easylogger\elog.c
+08014798	2.2.99
+080147a0	EasyLogger V%s is initialize success.
+080147cc	..\src\platform\easylogger\elog.c
+08014898	(%s) has assert failed at %s:%ld.
+080148bc	..\src\platform\easylogger\elog_utils.c
+08014924	(%s) has assert failed at %s:%ld. 
+0801494c	..\src\platform\easylogger\elog_port.c
+080166d3	 enqueue wave to disturb wave failed
+080166fc	..\src\application\process_deal_board.c
+08016724	init_bd
+0801672c	fw find disturb false, return error
+08016750	disturb find error, size=%d
+0801676c	create wave queue error
+0801686b	 create wave queue error
+08016888	..\src\application\process_deal_board.c
+080168b0	init_bd
+08016b38	level <= ELOG_LVL_VERBOSE
+08016b57	 (%s) has assert failed at %s:%ld.
+08016b7c	..\src\platform\easylogger\elog.c
+08016c8d	H@h80pGx
+08016dbc	create comm_task_init bd service failed
+08016de8	..\src\application\process_comm.c
+08016e49	H@hX0pGx
+08016e6d	H@h 0pGx
+080170dc	init bd
+08017147	 dp receive
+08017220	init timer driver failed
+08017240	..\src\application\rw_bdboard_init.c
+08017270	init board sensor driver failed
+08017290	init port driver failed
+080172a8	init lift driver failed
+080172c0	init factory driver failed
+080172dc	register timer driver failed
+080172fc	register board sensor driver failed
+080174ef	 base voltage =%d error, set default 2048
+08017520	..\src\application\process_deal_board.c
+08017548	init_bd
+08017558	software test failed=%d
+08017703	 malloc init pri data failed
+08017720	..\src\application\rw_bdboard_init.c
+08017754	hardwave version=%d, software version=%d
+08017780	init error=%d
+08017790	init process init board failed
+080177b0	..\src\application\rw_bdboard_init.c
+080177e0	init process comm failed
+08017b9c	elog init failed
+0801818c	false
+0801823c	error cmd =%d
+08018250	..\src\application\process_comm.c
+0801827c	message point is null
+08018297	 get message cmd is null
+080182b0	get message string is null
+080184f4	%1.15g
+08018500	%1.17g
+08018750	u%04x
+08018818	false
+0801884f	 initial
+08018ba0	..\src\platform\freertos\tasks.c
+08018bc4	Error:%s,%d  
+08018c87	 ..\src\platform\freertos\port.c
+08018ca8	Error:%s,%d  
+08018e03	 ..\src\platform\freertos\heap_4.c
+08018e28	Error:%s,%d  
+080197cc	create cjson config data failed
+080197f0	..\src\application\process_comm.c
+0801981c	left wave data error, area=%d, str=%d
+080198c0	create cjson config data failed
+080198e4	..\src\application\process_comm.c
+08019ab8	send string length=%d too long
+08019adc	..\src\platform\driver\driver_port\driver_mboard_port_snk_v2.c
+08019b1c	mport drv
+08019b2b	@send len=0
+08019b3f	@wait send string overtime
+08019db5	IH`pG
+08019fff	 malloc all sensor data failed
+0801a024	..\src\application\process_deal_board.c
+0801a04c	init_bd
+0801a52c	==============  IEC60730 Test Fail  ==============  
+0801a727	 CPU Test(PreRun) Fail!  
+0801a744	CPU Test(PreRun) Success!  
+0801a768	FLASH CRC32 Test(PreRun) Error, CHECHESUM=%x, crc=%x  
+0801a7a0	FLASH CRC32 Test(PreRun) Success!  
+0801a7c4	Switch back to IRC8M by closing PLL Fail!  
+0801a7f0	Clock Frequency Test Success!  
+0801a810	Program counter test(PreRun) Fail!  
+0801a838	IRC40K stable Fail!  
+0801a850	HXTAL stable Fail!  
+0801a868	IRC8M switch to HXTAL Fail!  
+0801a888	3/4*HXTAL < HXTAL'(PreRun) < 5/4*HXTAL Test Fail!  
+0801a8bc	Clock Test(PreRun) Unexpectedly Abort!  
+0801a8e8	Program counter test(PreRun) Success!  
+0801a910	adc test(PreRun) Failed!  
+0801a92c	adc test(PreRun) Success!  
+0801a94b	 ram test(PreRun) Success!  
+0801aa6b	 FLASH CRC(Run-Time) Test Success 
+0801aa97	 ram test failure 
+0801aaac	ram test ok 
+0801b494	..\src\platform\freertos\port.c
+0801b4b4	Error:%s,%d  
+0801b4eb	 ..\src\platform\freertos\port.c
+0801b50c	Error:%s,%d  
+0801b583	 ..\src\platform\freertos\heap_4.c
+0801b5a8	Error:%s,%d  
+0801b627	 ..\src\platform\freertos\port.c
+0801b648	Error:%s,%d  
+0801b69f	 ..\src\platform\freertos\tasks.c
+0801b6c4	Error:%s,%d  
+0801b754	..\src\platform\freertos\tasks.c
+0801b778	Error:%s,%d  
+0801b837	 ..\src\platform\freertos\tasks.c
+0801b85c	Error:%s,%d  
+0801b8a8	..\src\platform\freertos\tasks.c
+0801b8cc	Error:%s,%d  
+0801b984	..\src\platform\freertos\tasks.c
+0801b9a8	Error:%s,%d  
+0801ba17	 IDLE
+0801ba24	..\src\platform\freertos\tasks.c
+0801ba48	Error:%s,%d  
+0801bac3	 ..\src\platform\freertos\tasks.c
+0801bae8	Error:%s,%d  
+0801bc23	A..\src\platform\freertos\port.c
+0801bc44	Error:%s,%d  
+0801bcf4	..\src\platform\freertos\queue.c
+0801bd18	Error:%s,%d  
+0801be88	..\src\platform\freertos\queue.c
+0801beac	Error:%s,%d  
+0801bf40	..\src\platform\freertos\queue.c
+0801bf64	Error:%s,%d  
+0801c0c8	..\src\platform\freertos\queue.c
+0801c0ec	Error:%s,%d  
+0801c1b4	..\src\platform\freertos\queue.c
+0801c1d8	Error:%s,%d  
+0801c248	..\src\platform\freertos\tasks.c
+0801c26c	Error:%s,%d  
+0801c394	..\src\platform\freertos\tasks.c
+0801c3b8	Error:%s,%d  
+0801c4b4	..\src\platform\freertos\tasks.c
+0801c4d8	Error:%s,%d  
+0801c5df	 ..\src\platform\freertos\tasks.c
+0801c604	Error:%s,%d  
+0801c733	 ..\src\platform\freertos\tasks.c
+0801c758	Error:%s,%d  
+0801c7d8	..\src\platform\freertos\tasks.c
+0801c7fc	Error:%s,%d  
+0801c8d3	 ..\src\platform\freertos\tasks.c
+0801c8f8	Error:%s,%d  
+0801c910	get_process_comm
+0801c921	comm_task_init
+0801c930	comm_task
+0801c93a	deal_lift_sensor
+0801c94b	send_border_message
+0801c95f	send_version_message
+0801c974	send_seach_border_message
+0801c98e	send_follow_border_message
+0801c9a9	port_receive_callback
+0801c9bf	init_board_task
+0801c9cf	follow_border_check_wave
+0801c9e8	start_collect_data
+0801c9fb	delay_and_start_next_collect_data
+0801ca1d	follow_check_subwave
+0801ca44	init_task
+0801ca4e	log_init
+0801ca57	init_all_driver
+0801ca67	create_board_task
+0801ca79	create_comm_task
+0801ca8a	bdsensor_init
+0801ca98	send_string_dpport_snk_v2
+0801cab2	elog_start
+0801cabd	elog_set_output_enabled
+0801cad5	elog_set_fmt
+0801cae2	elog_set_filter
+0801caf2	elog_set_filter_lvl
+0801cb06	elog_set_filter_tag_lvl
+0801cb1e	elog_get_filter_tag_lvl
+0801cb36	elog_output
+0801cb42	get_fmt_enabled
+0801cb52	elog_find_lvl
+0801cb60	elog_find_tag
+0801cb6e	elog_user_assert_hook
+0801cb84	elog_strcpy
+0801cb90	elog_cpyln
+0801cb9b	elog_memcpy

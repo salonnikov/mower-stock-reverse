@@ -1,0 +1,15 @@
+# Контейнер-логгер: слушает TCP :9000 и пишет весь поток от сниффера в файл.
+# Запускать на машине 192.168.10.66 (та, что в secrets.h сниффера как LOG_HOST).
+#   cd server/uart-logger && docker compose up -d
+#   лог: ./logs/mower-uart.log  (строки вида "A <millis> <hex>" / "B <millis> <hex>")
+
+services:
+  uart-logger:
+    image: alpine/socat
+    container_name: mower-uart-logger
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    command: -u TCP-LISTEN:9000,reuseaddr,fork OPEN:/logs/mower-uart.log,creat,append
+    volumes:
+      - ./logs:/logs

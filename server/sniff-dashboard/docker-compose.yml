@@ -1,0 +1,19 @@
+# Дашборд сниффера: приём потока ESP (:9000) + веб-страница состояния (:8080).
+# Только stdlib, без pip. Поднимается на VPS (или локально).
+#   docker compose up -d   ->   http://<хост>:8080/
+services:
+  sniff-dashboard:
+    image: python:3.12-slim
+    container_name: mower-sniff-dashboard
+    restart: unless-stopped
+    ports:
+      - "9000:9000"   # поток от ESP
+      - "8080:8080"   # веб-дашборд
+    environment:
+      - DATA_PORT=9000
+      - WEB_PORT=8080
+      - OUT=/out
+    volumes:
+      - ./out:/out
+      - ./dashboard.py:/dashboard.py:ro
+    command: python /dashboard.py

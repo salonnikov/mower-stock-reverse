@@ -1,0 +1,18 @@
+# Автоматический дамп прошивки ESP32 косилки (через мост mower-link, режим BRIDGE).
+# USB не нужен — всё по сети. read_flash = только чтение, косилку не ломает.
+#
+# Запуск на домашнем ноуте:
+#   BRIDGE_IP=<ip-mower-link> docker compose run --rm dump
+#   (ip моста виден на странице mower-link; порт 3333 по умолчанию)
+# Результат: ./out/mower-esp-<дата>.bin  + вердикт «нормальная/зашифрована».
+
+services:
+  dump:
+    image: python:3.12-slim
+    environment:
+      - BRIDGE_IP=${BRIDGE_IP:-192.168.10.77}
+      - BRIDGE_PORT=${BRIDGE_PORT:-3333}
+    volumes:
+      - ./out:/out
+      - ./dump.sh:/dump.sh:ro
+    command: bash /dump.sh

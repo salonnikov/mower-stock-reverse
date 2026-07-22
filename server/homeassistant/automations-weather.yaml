@@ -1,0 +1,70 @@
+# Авто-расписание кошения по погоде (фаза 4).
+# Включить в configuration.yaml:  automation: !include automations-weather.yaml
+# Идея: косим по расписанию, НО пропускаем дождь/мокрую траву/ночь.
+
+# 1) Плановый выезд: будни в 10:00, если сухо и батарея заряжена
+- id: mower_scheduled_start
+  alias: "Mower: плановый старт (если сухо)"
+  trigger:
+    - platform: time
+      at: "10:00:00"
+  condition:
+    - condition: state
+      entity_id: binary_sensor.mower_mi302_rain      # нет дождя сейчас
+      state: "off"
+    - condition: numeric_state
+      entity_id: sensor.mower_mi302_battery_percent
+      above: 80
+    # прогноз: дождя в ближайшие часы не ждём (weather.* — ваш провайдер)
+    - condition: template
+      value_template: >
+        {{ state_attr('weather.home','forecast')[0].precipitation | float(0) < 0.5 }}
+  action:
+    - service: button.press
+      target: { entity_id: button.mower_mi302_start }
+
+# 2) Начался дождь во время кошения → домой
+- id: mower_rain_go_home
+  alias: "Mower: дождь → домой"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.mower_mi302_rain
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: sensor.mower_mi302_state
+      state: "mowing"
+  action:
+    - service: button.press
+      target: { entity_id: button.mower_mi302_home }
+
+# 3) Антиугон: тревога → push на телефон + лог координат
+- id: mower_theft_alarm
+  alias: "Mower: антиугон"
+  trigger:
+    - platform: mqtt
+      topic: mower/mi302/alarm/theft
+  action:
+    - service: notify.mobile_app          # HA companion app
+      data:
+        title: "🚨 Газонокосилку уносят!"
+        message: >
+          Сработал антиугон ({{ trigger.payload_json.reason }}).
+          Координаты: {{ trigger.payload_json.lat }}, {{ trigger.payload_json.lon }}
+        data:
+          url: "https://maps.google.com/?q={{ trigger.payload_json.lat }},{{ trigger.payload_json.lon }}"
+
+# 4) Низкий заряд (на всякий случай, если штатная логика не вернула)
+- id: mower_low_batt_home
+  alias: "Mower: низкий заряд → домой"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.mower_mi302_battery_percent
+      below: 20
+  condition:
+    - condition: state
+      entity_id: sensor.mower_mi302_state
+      state: "mowing"
+  action:
+    - service: button.press
+      target: { entity_id: button.mower_mi302_home }

@@ -1,0 +1,68 @@
+
+Discarded input sections
+
+ .text          0x00000000        0x0 /tmp/ccxHYhiI.o
+ .data          0x00000000        0x0 /tmp/ccxHYhiI.o
+ .bss           0x00000000        0x0 /tmp/ccxHYhiI.o
+ .comment       0x00000000       0x27 /tmp/ccxHYhiI.o
+ .ARM.attributes
+                0x00000000       0x2e /tmp/ccxHYhiI.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+FLASH            0x08090000         0x00008000         xr
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD /tmp/ccxHYhiI.o
+START GROUP
+LOAD /usr/lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m/nofp/libgcc.a
+LOAD /usr/lib/gcc/arm-none-eabi/14.2.1/../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc.a
+END GROUP
+
+.text           0x08090000       0x50
+ *(.text.entry)
+ .text.entry    0x08090000       0x10 /tmp/ccxHYhiI.o
+                0x08090000                mx_veneer
+ *(.text*)
+ .text.mx_tick  0x08090010       0x40 /tmp/ccxHYhiI.o
+                0x08090010                mx_tick
+ *(.rodata*)
+                0x08090050                        . = ALIGN (0x4)
+
+.glue_7         0x08090050        0x0
+ .glue_7        0x08090050        0x0 linker stubs
+
+.glue_7t        0x08090050        0x0
+ .glue_7t       0x08090050        0x0 linker stubs
+
+.vfp11_veneer   0x08090050        0x0
+ .vfp11_veneer  0x08090050        0x0 linker stubs
+
+.v4_bx          0x08090050        0x0
+ .v4_bx         0x08090050        0x0 linker stubs
+
+.iplt           0x08090050        0x0
+ .iplt          0x08090050        0x0 /tmp/ccxHYhiI.o
+
+.rel.dyn        0x08090050        0x0
+ .rel.iplt      0x08090050        0x0 /tmp/ccxHYhiI.o
+
+.data
+ *(.data*)
+
+.igot.plt       0x08090050        0x0
+ .igot.plt      0x08090050        0x0 /tmp/ccxHYhiI.o
+
+.bss
+ *(.bss*)
+ *(COMMON)
+
+/DISCARD/
+ *(.ARM.exidx*)
+ *(.comment)
+ *(.ARM.attributes)
+OUTPUT(payload.elf elf32-littlearm)
+LOAD linker stubs
