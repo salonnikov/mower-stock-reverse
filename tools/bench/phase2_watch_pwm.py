@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-ФАЗА 2 — переписывает ли прошивка CH3CV сама (наблюдение, БЕЗ записи).
-Определяет метод инъекции для Фазы 3.
-Запуск:  python3 phase2_watch_pwm.py
+PHASE 2 — does the firmware rewrite CH3CV by itself (observation, WITHOUT writing).
+Determines the injection method for Phase 3.
+Run:  python3 phase2_watch_pwm.py
 """
 import time
 from swd import SWD
@@ -10,23 +10,23 @@ from swd import SWD
 S = SWD()
 CH3CV = 0x40000440
 N = 20
-print("=== ФАЗА 2 — наблюдение CH3CV (%d раз, ~%.0fс) ===" % (N, N * 0.5))
+print("=== PHASE 2 — observing CH3CV (%d times, ~%.0fs) ===" % (N, N * 0.5))
 vals = []
 for i in range(N):
     v = S.mdw(CH3CV)
     v = v[0] if v else -1
     vals.append(v)
-    print("  t=%4.1fс  CH3CV=0x%08x" % (i * 0.5, v & 0xFFFFFFFF))
+    print("  t=%4.1fs  CH3CV=0x%08x" % (i * 0.5, v & 0xFFFFFFFF))
     time.sleep(0.5)
 
 uniq = set(vals)
-print("\n=== ВЕРДИКТ ===")
+print("\n=== VERDICT ===")
 if len(uniq) == 1:
-    print("CH3CV СТАБИЛЕН -> прошивка его сейчас не трогает.")
-    print("   => Фаза 3: можно писать duty напрямую, запись удержится.")
+    print("CH3CV is STABLE -> the firmware isn't touching it right now.")
+    print("   => Phase 3: you can write duty directly, the write will hold.")
 else:
-    print("CH3CV ДЁРГАЕТСЯ сам (%d разных значений) -> мотор-контур активно командует." % len(uniq))
-    print("   => прямая запись будет затираться ~каждые 10мс. Варианты:")
-    print("      - писать duty в ЦИКЛе (Фаза 3 с --loop), или")
-    print("      - перевести косилку в состояние, где контур НЕ командует скорость.")
+    print("CH3CV MOVES by itself (%d distinct values) -> the motor loop is actively commanding." % len(uniq))
+    print("   => a direct write will be overwritten ~every 10ms. Options:")
+    print("      - write duty in a LOOP (Phase 3 with --loop), or")
+    print("      - put the mower into a state where the loop does NOT command speed.")
 S.close()

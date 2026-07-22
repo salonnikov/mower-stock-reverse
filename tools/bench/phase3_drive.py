@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-ФАЗА 3 — прямая запись duty в CH3CV (ГЛАВНЫЙ тест: крутит ли PWM колесо).
-ПИШЕТ в регистр! Пред-условия: колёса вывешены, нож отключён, рука на обесточке,
-Фаза 0 = GO, Фаза 2 понятна.
+PHASE 3 — direct duty write to CH3CV (THE MAIN test: does PWM turn the wheel).
+WRITES to the register! Preconditions: wheels off the ground, blade disconnected, hand on the kill switch,
+Phase 0 = GO, Phase 2 understood.
 
-Запуск (по одному колесу, малым duty):
-  python3 phase3_drive.py L 500 0x2000beXX     # side duty odom_addr(из Фазы1)
-  python3 phase3_drive.py L 500 0x2000beXX --loop   # если Фаза2 показала перезапись
+Run (one wheel at a time, small duty):
+  python3 phase3_drive.py L 500 0x2000beXX     # side duty odom_addr(from Phase 1)
+  python3 phase3_drive.py L 500 0x2000beXX --loop   # if Phase 2 showed overwriting
 
-Аргументы:
-  side : L (CH3CV 0x40000440) | R (CH2CV 0x4000043c — ⓗ уточни канал по Фазе0)
-  duty : 0..7200 (CAR период ~7200). Начинай с 300-500.
-  odom : адрес тика из Фазы 1 (для объективной проверки вращения). Можно опустить.
-  --loop : держать duty ~3с, переписывая каждые 20мс (против перезаписи прошивкой).
-Всегда в конце пишет 0 (стоп/тормоз).
+Arguments:
+  side : L (CH3CV 0x40000440) | R (CH2CV 0x4000043c — ⓗ confirm the channel via Phase 0)
+  duty : 0..7200 (CAR period ~7200). Start with 300-500.
+  odom : tick address from Phase 1 (for an objective rotation check). May be omitted.
+  --loop : hold duty ~3s, rewriting every 20ms (against overwriting by the firmware).
+Always writes 0 at the end (stop/brake).
 """
 import sys
 import time
@@ -28,20 +28,20 @@ loop = "--loop" in sys.argv
 ch = CH.get(side, CH["L"])
 
 if duty < 0 or duty > 7200:
-    print("duty вне [0..7200]"); raise SystemExit(1)
+    print("duty out of [0..7200]"); raise SystemExit(1)
 
 S = SWD()
-print("=== ФАЗА 3 — %s колесо, CH=0x%08x, duty=%d, %s ==="
-      % (side, ch, duty, "ЦИКЛ 3с" if loop else "разово 1с"))
-print("ПОДТВЕРДИ голосом: колёса вывешены, нож отключён, рука на обесточивании.")
+print("=== PHASE 3 — %s wheel, CH=0x%08x, duty=%d, %s ==="
+      % (side, ch, duty, "LOOP 3s" if loop else "once 1s"))
+print("CONFIRM out loud: wheels off the ground, blade disconnected, hand on the kill switch.")
 try:
-    input("Enter — пуск (Ctrl-C — отмена)... ")
+    input("Enter — start (Ctrl-C — cancel)... ")
 except KeyboardInterrupt:
-    print("\nотмена"); S.close(); raise SystemExit(0)
+    print("\ncancelled"); S.close(); raise SystemExit(0)
 
 o0 = S.mdw(odom)[0] if odom else None
 if o0 is not None:
-    print("odom ДО  = %d" % o0)
+    print("odom BEFORE = %d" % o0)
 
 try:
     if loop:
@@ -51,20 +51,20 @@ try:
             time.sleep(0.02)
     else:
         S.mww(ch, duty)
-        print("записал CH<-%d, держу 1с..." % duty)
+        print("wrote CH<-%d, holding 1s..." % duty)
         time.sleep(1.0)
 finally:
-    S.mww(ch, 0)  # ВСЕГДА стоп
-    print("записал CH<-0 (стоп/тормоз)")
+    S.mww(ch, 0)  # ALWAYS stop
+    print("wrote CH<-0 (stop/brake)")
 
 o1 = S.mdw(odom)[0] if odom else None
 if o1 is not None:
-    print("odom ПОСЛЕ = %d  (Δ=%d)" % (o1, o1 - o0))
+    print("odom AFTER = %d  (Δ=%d)" % (o1, o1 - o0))
     if o1 != o0:
-        print(">>> ТИКИ РАСТУТ + смотри глазами: если колесо крутилось — PWM-duty РЕАЛЬНО вращает.")
+        print(">>> TICKS RISING + watch with your eyes: if the wheel turned — PWM duty REALLY drives it.")
     else:
-        print(">>> тиков нет: duty сам по себе НЕ крутит -> Фаза 4 (A4963 RUN/направление).")
+        print(">>> no ticks: duty alone does NOT turn it -> Phase 4 (A4963 RUN/direction).")
 else:
-    print(">>> смотри глазами: крутилось ли колесо. (odom-адрес не задан)")
-print("Если что-то не так — запусти:  python3 estop.py")
+    print(">>> watch with your eyes: did the wheel turn. (odom address not given)")
+print("If something goes wrong — run:  python3 estop.py")
 S.close()

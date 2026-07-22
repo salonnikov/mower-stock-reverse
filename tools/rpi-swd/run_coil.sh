@@ -1,6 +1,6 @@
 #!/bin/bash
-# Автономный раннер замера катушки на малине. Все redirect'ы внутри — никакого
-# вложенного квотирования через ssh. Пишет лог и маркер DONE, переживает обрыв WiFi.
+# Standalone coil-measurement runner on the Pi. All redirects are inside — no
+# nested quoting through ssh. Writes a log and a DONE marker, survives WiFi drops.
 LOG=/home/pi/coil.log
 : > "$LOG"
 echo "START $(date -u +%H:%M:%S)" >> "$LOG"

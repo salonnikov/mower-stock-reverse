@@ -1,7 +1,7 @@
 #!/bin/bash
-# Ставит P1-логгер как systemd-сервис на малину. Запускать С ХОСТА, когда линк есть.
-# Идемпотентно: повторный запуск просто обновляет файлы и перезапускает сервис.
-# Требует sudo на малине (nopasswd) — ставит unit в /etc/systemd/system.
+# Installs the P1 logger as a systemd service on the Pi. Run FROM THE HOST when the link is up.
+# Idempotent: rerunning just updates the files and restarts the service.
+# Requires sudo on the Pi (nopasswd) — installs the unit into /etc/systemd/system.
 set -e
 PI=pi@192.168.10.81
 SSH="ssh -o ConnectTimeout=8 -o BatchMode=yes"
@@ -21,5 +21,5 @@ $SSH $PI '
   sleep 3
   echo "active=$(systemctl is-active mower-p1-logger.service) enabled=$(systemctl is-enabled mower-p1-logger.service)"
   echo "--- last log lines ---"
-  tail -4 /home/pi/mower-swd/p1_log.txt 2>/dev/null || echo "(лог ещё пуст)"
+  tail -4 /home/pi/mower-swd/p1_log.txt 2>/dev/null || echo "(log still empty)"
 '

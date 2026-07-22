@@ -1,39 +1,39 @@
 #!/usr/bin/env python3
 """
-server.py — web-dashboard косилки через SWD (OpenOCD telnet :4444).
-Запускать на МАЛИНЕ. Python 3.7+, ТОЛЬКО stdlib (никаких pip-зависимостей).
+server.py — mower web dashboard via SWD (OpenOCD telnet :4444).
+Run on the RASPBERRY PI. Python 3.7+, stdlib ONLY (no pip dependencies).
 
-Архитектура:
-  - Один persistent telnet-коннект к OpenOCD :4444 (только ОДИН клиент
-    может сидеть на :4444 — mower-webctl и bench-скрипты должны быть остановлены).
-  - Все обращения к SWD сериализованы через один Lock.
-  - Поток-поллер: mdw 0x20014000 9 (~4 Гц) -> декодирует телеметрию -> кэш.
-  - Поток keep-alive: пока armed, бампает seq (+0x08) ~5 Гц (dead-man прошивки
-    останавливает моторы, если seq не меняется ~200 мс).
-  - Watchdog браузера: если armed, скорости != 0 и от клиента не было
-    /api/drive дольше DRIVE_TIMEOUT — скорости обнуляются (второе звено
-    dead-man: прошивка<->бекенд по seq, бекенд<->браузер по свежести drive).
+Architecture:
+  - One persistent telnet connection to OpenOCD :4444 (only ONE client
+    may sit on :4444 — mower-webctl and bench scripts must be stopped).
+  - All SWD accesses are serialized through a single Lock.
+  - Poller thread: mdw 0x20014000 9 (~4 Hz) -> decodes telemetry -> cache.
+  - Keep-alive thread: while armed, bumps seq (+0x08) ~5 Hz (firmware dead-man
+    stops the motors if seq does not change for ~200 ms).
+  - Browser watchdog: if armed, speeds != 0 and the client sent no
+    /api/drive for longer than DRIVE_TIMEOUT — speeds are zeroed (second
+    dead-man link: firmware<->backend by seq, backend<->browser by drive freshness).
 
-Mailbox (base = 0x20014000), контракт с прошивкой:
-  CONTROL (пишем мы):
+Mailbox (base = 0x20014000), contract with the firmware:
+  CONTROL (we write):
     +0x04 u32 magic      0x5243414D = ARM, 0 = DISARM
-    +0x08 u32 seq        dead-man счётчик
-    +0x0C i16 left_speed  (low16)  | +0x0E i16 right_speed (high16) — одним mww
+    +0x08 u32 seq        dead-man counter
+    +0x0C i16 left_speed  (low16)  | +0x0E i16 right_speed (high16) — in one mww
     +0x10 u8  blade_on
-  TELEMETRY (пишет прошивка):
-    +0x00 u32 heartbeat (~1 кГц)
+  TELEMETRY (firmware writes):
+    +0x00 u32 heartbeat (~1 kHz)
     +0x14 u16 batt_mV | +0x16 u8 batt_pct | +0x17 u8 charge
     +0x18 u16 ch3_duty(left) | +0x1A u16 ch2_duty(right)
     +0x1C u16 ch1_duty(blade) | +0x1E u8 btn | +0x1F u8 fw_state
     +0x20 u16 left_diag | +0x22 u16 right_diag        (A4963 diagnostic words)
     +0x24 u16 blade_diag | +0x26 u16 pad
-  -> читаем mdw 0x20014000 10 (40 байт, через +0x27).
+  -> we read mdw 0x20014000 10 (40 bytes, through +0x27).
 
 A4963 diagnostic-word bit map (datasheet Table 4):
   [15]FF general-fault  [14]POR power-on-reset  [13]SE serial-err
   [11]TW temp-warning   [10]OT overtemp         [9]LOS loss-of-sync
   [7]VS  VBB undervolt  [5]AH/[4]AL/[3]BH/[2]BL/[1]CH/[0]CL per-phase VDS
-  (over-current/short). 0xFFFF = SPI-чтение не удалось.
+  (over-current/short). 0xFFFF = SPI read failed.
 """
 import json
 import os
@@ -42,7 +42,7 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-# ---------- конфиг ----------
+# ---------- config ----------
 HTTP_HOST = "0.0.0.0"
 HTTP_PORT = int(os.environ.get("DASH_PORT", "8080"))
 OPENOCD_HOST = "127.0.0.1"
@@ -52,9 +52,9 @@ MBOX = 0x20014000
 MAGIC_ARM = 0x5243414D
 SPEED_MAX = 7200            # 0x1C20
 
-POLL_PERIOD = 0.25          # телеметрия ~4 Гц
-KEEPALIVE_PERIOD = 0.15     # бамп seq пока armed (~5-6 Гц + piggyback)
-DRIVE_TIMEOUT = 1.0         # сек без /api/drive при ненулевых скоростях -> стоп
+POLL_PERIOD = 0.25          # telemetry ~4 Hz
+KEEPALIVE_PERIOD = 0.15     # bump seq while armed (~5-6 Hz + piggyback)
+DRIVE_TIMEOUT = 1.0         # sec without /api/drive at nonzero speeds -> stop
 RECONNECT_MIN_INTERVAL = 2.0
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
@@ -62,7 +62,7 @@ STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 FW_STATES = {0: "DISARMED", 1: "ARMED-IDLE", 2: "DRIVING"}
 
 # A4963 diagnostic register — (bit, short, long) per the datasheet Table 4.
-# Bits 12/8/6 reserved (always 0). Порядок = от старшего к младшему для показа.
+# Bits 12/8/6 reserved (always 0). Order = from MSB to LSB for display.
 A4963_DIAG_BITS = [
     (15, "FF",  "general fault flag"),
     (14, "POR", "power-on reset"),
@@ -83,15 +83,15 @@ A4963_DIAG_BITS = [
 def decode_diag(word):
     """A4963 16-bit diagnostic word -> {raw, hex, ok, valid, flags:[{bit,short,long}]}"""
     word &= 0xFFFF
-    # 0xFFFF (все reserved-биты стоят) = SPI-чтение не удалось / нет отклика.
-    valid = (word != 0xFFFF) and ((word & 0x1140) == 0)  # биты 12,8,6 должны быть 0
+    # 0xFFFF (all reserved bits set) = SPI read failed / no response.
+    valid = (word != 0xFFFF) and ((word & 0x1140) == 0)  # bits 12,8,6 must be 0
     flags = [{"bit": b, "short": s, "long": l}
              for (b, s, l) in A4963_DIAG_BITS if word & (1 << b)]
     return {
         "raw": word,
         "hex": "0x%04X" % word,
         "valid": valid,
-        # "ok" = связь есть и НЕТ выставленных фолт-битов
+        # "ok" = link is up and NO fault bits are set
         "ok": valid and word == 0,
         "flags": flags,
     }
@@ -103,13 +103,13 @@ def _i16(v):
     return v - 0x10000 if v & 0x8000 else v
 
 
-# ---------- тонкий telnet-клиент OpenOCD (паттерн tools/bench/swd.py) ----------
+# ---------- thin OpenOCD telnet client (pattern from tools/bench/swd.py) ----------
 class SWD:
     def __init__(self, host=OPENOCD_HOST, port=OPENOCD_PORT, settle=0.2):
         self.s = socket.create_connection((host, port), timeout=5)
         self.s.settimeout(0.2)
         time.sleep(settle)
-        self._read_until_prompt(0.6)  # съесть баннер до приглашения '>'
+        self._read_until_prompt(0.6)  # consume the banner up to the '>' prompt
 
     def _read_until_prompt(self, deadline=0.8):
         buf = b""
@@ -156,15 +156,15 @@ class SWD:
             pass
 
 
-# ---------- менеджер: одна связь, один лок, поллер, keep-alive ----------
+# ---------- manager: one connection, one lock, poller, keep-alive ----------
 class Mower:
     def __init__(self):
-        self.lock = threading.Lock()        # сериализует ВЕСЬ доступ к :4444
+        self.lock = threading.Lock()        # serializes ALL access to :4444
         self.swd = None
         self._last_connect_try = 0.0
 
         self.seq = 1
-        self.armed = False                  # наше представление (что мы записали)
+        self.armed = False                  # our view (what we wrote)
         self.left = 0
         self.right = 0
         self.blade = False
@@ -177,7 +177,7 @@ class Mower:
         threading.Thread(target=self._poll_loop, daemon=True).start()
         threading.Thread(target=self._keepalive_loop, daemon=True).start()
 
-    # --- связь (вызывать ПОД локом) ---
+    # --- connection (call UNDER the lock) ---
     def _ensure_swd(self):
         if self.swd is not None:
             return self.swd
@@ -194,17 +194,17 @@ class Mower:
             self.swd = None
 
     def _bump_seq_unlocked(self):
-        """Бамп dead-man seq. Вызывать ПОД локом при живой связи."""
+        """Bump the dead-man seq. Call UNDER the lock with a live connection."""
         self.seq = (self.seq + 1) & 0xFFFFFFFF
         self.swd.mww(MBOX + 0x08, self.seq)
 
-    # --- фоновые потоки ---
+    # --- background threads ---
     def _keepalive_loop(self):
         while True:
             time.sleep(KEEPALIVE_PERIOD)
             if not self.armed:
                 continue
-            # watchdog браузера: команды drive перестали приходить -> стоп колёс
+            # browser watchdog: drive commands stopped arriving -> stop wheels
             stale = ((self.left or self.right)
                      and time.time() - self.last_drive_ts > DRIVE_TIMEOUT)
             try:
@@ -225,7 +225,7 @@ class Mower:
                 with self.lock:
                     self._ensure_swd()
                     words = self.swd.mdw(MBOX, 10)
-                    # piggyback-бамп: не даём mdw растянуть паузу seq
+                    # piggyback bump: don't let mdw stretch the seq pause
                     if self.armed:
                         self._bump_seq_unlocked()
                 if len(words) >= 8:
@@ -252,7 +252,7 @@ class Mower:
         if self._last_hb is None or hb != self._last_hb:
             self._last_hb = hb
             self._last_hb_ts = now
-        # alive = heartbeat менялся за последние ~0.7 с (2-3 poll-цикла)
+        # alive = heartbeat changed within the last ~0.7 s (2-3 poll cycles)
         alive = (now - self._last_hb_ts) < 0.7
         self.telemetry = {
             "connected": True,
@@ -286,10 +286,10 @@ class Mower:
             spi = (w[9] >> 16) & 0xFF
             def outcome(bit, diagword):
                 if spi & (1 << bit):
-                    return "TIMEOUT (шина SPI не тактирует = софт)"
+                    return "TIMEOUT (SPI bus not clocking = software)"
                 if diagword == 0xFFFF:
-                    return "обмен прошёл, драйвер молчит SDO=1 (= железо/VBB)"
-                return "ответил"
+                    return "exchange completed, driver silent SDO=1 (= hardware/VBB)"
+                return "responded"
             self.telemetry["diag"] = {
                 "left":  decode_diag(w[8] & 0xFFFF),
                 "right": decode_diag((w[8] >> 16) & 0xFFFF),
@@ -302,13 +302,13 @@ class Mower:
                 "blade": outcome(2, w[9] & 0xFFFF),
             }
 
-    # --- команды (из HTTP-хендлеров) ---
+    # --- commands (from HTTP handlers) ---
     def cmd_arm(self, on):
         with self.lock:
             self._ensure_swd()
             if on:
                 self.left = self.right = 0
-                self.swd.mww(MBOX + 0x0C, 0)                 # скорости 0
+                self.swd.mww(MBOX + 0x0C, 0)                 # speeds 0
                 self.swd.mww(MBOX + 0x04, MAGIC_ARM)         # ARM
                 self.armed = True
             else:
@@ -327,7 +327,7 @@ class Mower:
         with self.lock:
             self._ensure_swd()
             if not self.armed:
-                self.swd.mww(MBOX + 0x04, MAGIC_ARM)         # drive подразумевает ARM
+                self.swd.mww(MBOX + 0x04, MAGIC_ARM)         # drive implies ARM
                 self.armed = True
             self.left, self.right = left, right
             self.last_drive_ts = time.time()
@@ -344,7 +344,7 @@ class Mower:
             self._bump_seq_unlocked()
 
     def cmd_stop(self):
-        """Полный стоп: скорости 0, нож 0, DISARM."""
+        """Full stop: speeds 0, blade 0, DISARM."""
         with self.lock:
             self._ensure_swd()
             self.left = self.right = 0
@@ -391,7 +391,7 @@ class Mower:
                 v = self.swd.mdw(base, 4)
                 out["P" + name] = {"CTL0": "0x%08x" % v[0], "CTL1": "0x%08x" % v[1],
                                    "IDR": "0x%08x" % v[2], "ODR": "0x%08x" % v[3]} if len(v) >= 4 else None
-            # периферия (non-halt): найти НЕ-GPIO отличие завод vs наша
+            # peripherals (non-halt): find a NON-GPIO difference factory vs ours
             def rd(addr, n):
                 w = self.swd.mdw(addr, n)
                 return ["0x%08x" % x for x in w] if len(w) >= n else None
@@ -410,7 +410,7 @@ MOWER = Mower()
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
-    def log_message(self, fmt, *args):  # тихий лог: только ошибки
+    def log_message(self, fmt, *args):  # quiet log: errors only
         if args and str(args[1] if len(args) > 1 else "").startswith(("4", "5")):
             BaseHTTPRequestHandler.log_message(self, fmt, *args)
 
@@ -467,7 +467,7 @@ class Handler(BaseHTTPRequestHandler):
         except ValueError as e:
             return self._json({"ok": False, "error": str(e)}, 400)
         except Exception as e:
-            # связь с openocd упала посреди команды — сбросить и доложить
+            # openocd connection dropped mid-command — reset and report
             with MOWER.lock:
                 MOWER._drop_swd()
             return self._json({"ok": False, "error": "swd: %s" % e}, 503)

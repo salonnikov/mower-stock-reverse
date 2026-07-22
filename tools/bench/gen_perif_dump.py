@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-gen_perif_dump.py — сгенерить openocd-cfg, который дампит ВСЕ регистры ВСЕЙ периферии
-(по списку из GD32F30x_CL.svd) пофайлово в /tmp/perif/<NAME>.bin. Плюс ядро (SCB/NVIC/SysTick).
-Standalone openocd 0.10: mdw НЕ печатает в лог (уходит в отключённый telnet), а dump_image пишет
-файл — поэтому читаем всё через dump_image. Читаем ТОЛЬКО объявленные в SVD блоки → не задеваем
-зарезервированные дыры (которые фолтят шину).
+gen_perif_dump.py — generate an openocd-cfg that dumps ALL registers of ALL peripherals
+(from the list in GD32F30x_CL.svd) file-by-file into /tmp/perif/<NAME>.bin. Plus the core (SCB/NVIC/SysTick).
+Standalone openocd 0.10: mdw does NOT print to the log (goes to the disconnected telnet), whereas dump_image writes
+a file — so we read everything via dump_image. We read ONLY the blocks declared in the SVD → we don't touch
+reserved holes (which fault the bus).
 
-  python gen_perif_dump.py <svd> <out.cfg>          # halt-снимок (для драйв-состояния тоже ок: конфиг-регистры застыли)
+  python gen_perif_dump.py <svd> <out.cfg>          # halt snapshot (fine for the drive state too: config registers are frozen)
 """
 import sys, re
 svd = open(sys.argv[1], errors='ignore').read()
@@ -41,24 +41,24 @@ for m in re.finditer(r"<peripheral\b[^>]*>(.*?)</peripheral>", svd, re.S):
     size = max((int(s, 0) for s in szs), default=0x100)
     if size == 0:
         size = 0x100
-    # Пропустить потенциально не-замапленные/не-затактированные внешние блоки, чьё
-    # чтение может фолтнуть шину и оборвать дамп: EXMC(0xA000..), USBFS(0x5000..),
-    # ENET(0x40028..). Всё в 0x40000000..0x40023FFF замаплено; ядро 0xE000.. тоже.
+    # Skip potentially unmapped/unclocked external blocks whose
+    # read may fault the bus and abort the dump: EXMC(0xA000..), USBFS(0x5000..),
+    # ENET(0x40028..). Everything in 0x40000000..0x40023FFF is mapped; the core 0xE000.. too.
     if 0x40024000 <= b < 0xE0000000:
         continue
     periph.append((name, b, size))
 
-# ядро Cortex-M (нет в SVD-periph): SysTick+NVIC+SCB область 0xE000E000..0xE000F000
+# Cortex-M core (not in SVD peripherals): SysTick+NVIC+SCB region 0xE000E000..0xE000F000
 periph.append(("CORE_SCS", 0xE000E000, 0x1000))
 periph.append(("DBGMCU",   0xE0042000, 0x20))
 
 L = [HDR]
 for name, b, size in periph:
-    # dump_image берёт длину в байтах; выравниваем до слова
+    # dump_image takes the length in bytes; align to a word
     n = (size + 3) & ~3
     L.append(f'dump_image /tmp/perif/{name}.bin 0x{b:08x} {n}')
 L.append("shutdown")
 open(out, "w").write("\n".join(L) + "\n")
-print(f"периферий: {len(periph)}, строк: {len(L)}")
+print(f"peripherals: {len(periph)}, lines: {len(L)}")
 for name, b, size in periph:
     print(f"  {name:12s} 0x{b:08x} +0x{size:x}")

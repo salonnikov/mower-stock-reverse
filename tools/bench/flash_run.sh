@@ -1,6 +1,6 @@
 #!/bin/bash
-# Универсальный detached-раннер flash-операций. $1 = имя .cfg в ~/mower-swd/.
-# Подменяет poll.cfg на flash-cfg, гоняет, возвращает poll.cfg. Лог /tmp/a3.log.
+# Universal detached runner for flash operations. $1 = name of the .cfg in ~/mower-swd/.
+# Swaps poll.cfg for the flash-cfg, runs it, restores poll.cfg. Log /tmp/a3.log.
 CFG="$1"
 LOG=/tmp/a3.log
 {

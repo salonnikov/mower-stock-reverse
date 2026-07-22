@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-gen_flash_flat.py — сгенерить "плоский" (flat) openocd-cfg для заливки СВОЕГО app,
-совместимый с openocd 0.10 на малине (без Tcl if/while/for/mem2array/[expr]).
+gen_flash_flat.py — generate a "flat" openocd-cfg for flashing OUR app,
+compatible with openocd 0.10 on the Pi (no Tcl if/while/for/mem2array/[expr]).
 
-Формат = как рабочий flash_own_flat.cfg (2026-07-07): HDR+`poll off`+halt →
-wdg-freeze прямой mww → unlock bank0 → erase N страниц (mww SER/AR/START + sleep 100)
-→ program (PG; per non-FF полуслово `mwh; sleep 6`; PG off; lock) → shutdown.
-БЕЗ reset run (после флеша — физический power-cycle) и БЕЗ in-cfg verify
-(верификация отдельным read-дампом).
+Format = like the working flash_own_flat.cfg (2026-07-07): HDR+`poll off`+halt →
+wdg-freeze direct mww → unlock bank0 → erase N pages (mww SER/AR/START + sleep 100)
+→ program (PG; per non-FF halfword `mwh; sleep 6`; PG off; lock) → shutdown.
+WITHOUT reset run (after flashing — physical power-cycle) and WITHOUT in-cfg verify
+(verification via a separate read-dump).
 
   docker run --rm -v /Users/denis/MOWER:/work python:3.12-slim \
     python /work/tools/bench/gen_flash_flat.py /work/firmware/mower-own/test-images/app-XXX.bin /work/<out>.cfg
@@ -64,7 +64,7 @@ def main():
     L.append("shutdown")
     open(out,'w').write("\n".join(L)+"\n")
     sp=int.from_bytes(app[0:4],'little'); rst=int.from_bytes(app[4:8],'little')
-    print(f"[flat] {out}: {npages} page(s) 0x{P1:08x}..0x{P1+span-1:08x}, {nprog} non-FF полуслов, {len(L)} строк")
+    print(f"[flat] {out}: {npages} page(s) 0x{P1:08x}..0x{P1+span-1:08x}, {nprog} non-FF halfwords, {len(L)} lines")
     print(f"vector SP=0x{sp:08x} Reset=0x{rst:08x}")
 
 if __name__=='__main__': main()

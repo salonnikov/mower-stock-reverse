@@ -1,11 +1,11 @@
-# Оркестратор mower-auto: автоматический дамп + сниф.
-# Поднимается ХОТЬ ГДЕ (VPS или домашняя сеть) — ESP сама дозванивается сюда.
-#   docker compose up -d        # запустить
-#   docker compose logs -f      # смотреть прогресс (дамп/вердикт)
-# Файлы: ./out/mower-esp-<дата>.bin (дамп), ./out/sniff.log (сниф).
+# mower-auto orchestrator: automatic dump + sniff.
+# Runs ANYWHERE (VPS or home network) — the ESP dials in here itself.
+#   docker compose up -d        # start
+#   docker compose logs -f      # watch progress (dump/verdict)
+# Files: ./out/mower-esp-<date>.bin (dump), ./out/sniff.log (sniff).
 #
-# Если ставишь в ДОМАШНЕЙ сети — пропиши IP этой машины в secrets.h прошивки
-# (SRV_HOST) и перешей ESP. Если на VPS пользователя (по умолчанию) — ничего не меняешь.
+# If you deploy it on a HOME network — set this machine's IP in the firmware's secrets.h
+# (SRV_HOST) and reflash the ESP. If on the user's VPS (default) — change nothing.
 
 services:
   orchestrator:
@@ -13,9 +13,9 @@ services:
     container_name: mower-orchestrator
     restart: unless-stopped
     ports:
-      - "7777:7777"   # data (мост UART)
+      - "7777:7777"   # data (UART bridge)
       - "7778:7778"   # control (P)
-      - "8080:8080"   # веб-дашборд
+      - "8080:8080"   # web dashboard
     environment:
       - DATA_PORT=7777
       - CTRL_PORT=7778

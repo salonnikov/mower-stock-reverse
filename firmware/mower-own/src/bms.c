@@ -1,26 +1,26 @@
 /*
- * bms.c — ТОЧНАЯ репликация заводского USART2 пак-линка для mower-own (GD32F305).
+ * bms.c — EXACT replication of the factory USART2 pack-link for mower-own (GD32F305).
  *
- * Не изобретаем — повторяем завод (reverse-v2/factory-map/05-bms-pack.md):
- *   транспорт : USART2 19200 8N1, PD8=TX / PD9=RX (AFIO full remap).
- *   старт     : CE-wake -> connect C1 x4 (при неудаче CE-wake повтор).
- *   рабочий   : НЕПРЕРЫВНЫЙ keep-alive — циклом C1 / C3 / 0x53; при сбое -> CE.
- *   все кадры : из заводской .data, CRC-8/MAXIM проверены байт-в-байт.
- * Ответ пака = кадр с заголовком 3A A3.
+ * We don't invent — we mirror the factory (reverse-v2/factory-map/05-bms-pack.md):
+ *   transport : USART2 19200 8N1, PD8=TX / PD9=RX (AFIO full remap).
+ *   start     : CE-wake -> connect C1 x4 (on failure repeat CE-wake).
+ *   running   : CONTINUOUS keep-alive — looping C1 / C3 / 0x53; on failure -> CE.
+ *   all frames: from factory .data, CRC-8/MAXIM verified byte-for-byte.
+ * Pack reply = frame with header 3A A3.
  *
- * ПОЧЕМУ ВАЖНО: пак держит разрядный FET (питание мотор-VBB) только пока хост
- * его опрашивает; завод шлёт CE + C1/C3/0x53 постоянно. Наша прежняя версия слала
- * только разовый C1 — это НЕ то, что делает завод. Здесь — как у завода.
+ * WHY IT MATTERS: the pack holds the discharge FET (motor-VBB power) only while the host
+ * keeps polling it; the factory sends CE + C1/C3/0x53 continuously. Our previous version sent
+ * only a single C1 — that is NOT what the factory does. Here it is done like the factory.
  *
- * Диагностика (читать по SWD через символы из build/app.map):
- *   g_bms_polls   — всего обменов; g_bms_replies — сколько увидели 3A A3;
- *   g_bms_connected — 1 если линк живой; g_bms_resp[8]/len — последний ответ;
- *   g_bms_last_op — последний посланный opcode.
+ * Diagnostics (read over SWD via symbols from build/app.map):
+ *   g_bms_polls   — total exchanges; g_bms_replies — how many 3A A3 seen;
+ *   g_bms_connected — 1 if link alive; g_bms_resp[8]/len — last reply;
+ *   g_bms_last_op — last sent opcode.
  */
 #include "bms.h"
 #include "gd32_regs.h"
 
-/* Заводские кадры запросов (из .data, CRC-8/MAXIM верны). */
+/* Factory request frames (from .data, CRC-8/MAXIM valid). */
 static const uint8_t F_CE[12] =
     { 0x1C,0xA1,0x09,0xCE,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x6E };  /* link-wake */
 static const uint8_t F_C1[6]  = { 0x1C,0xA1,0x03,0xC1,0x01,0x2E };   /* connect/telemetry */
@@ -36,11 +36,11 @@ static const uint8_t F_B2[6]  = { 0x1C,0xA1,0x03,0xB2,0x00,0x93 };
 static const uint8_t F_B3[6]  = { 0x1C,0xA1,0x03,0xB3,0x55,0xB3 };
 static const uint8_t F_B4[6]  = { 0x1C,0xA1,0x03,0xB4,0x0F,0x78 };
 
-#define BMS_POLL_PERIOD  100U     /* keep-alive каждые ~100 итераций (~100 мс) */
-#define BMS_TX_TIMEOUT   20000U   /* bounded TBE/TC ожидание                   */
-#define BMS_RX_IDLE      1000000U /* ~60мс: ждём ответ пака (у него задержка в мс) */
+#define BMS_POLL_PERIOD  100U     /* keep-alive every ~100 iterations (~100 ms) */
+#define BMS_TX_TIMEOUT   20000U   /* bounded TBE/TC wait                        */
+#define BMS_RX_IDLE      1000000U /* ~60ms: wait for pack reply (it has ms-scale latency) */
 
-/* Диагностика (по SWD через app.map). */
+/* Diagnostics (over SWD via app.map). */
 volatile uint16_t g_bms_polls;
 volatile uint16_t g_bms_replies;
 volatile uint8_t  g_bms_connected;
@@ -57,15 +57,15 @@ static void tx_byte(uint8_t b)
     USART_REG(USART2_BASE, USART_DATA_OFF) = b;
 }
 
-/* Один обмен: послать кадр, дождаться TC, вычитать ответ до простоя.
- * Возвращает 1, если в потоке встретился заголовок ответа 3A A3. Bounded. */
+/* One exchange: send frame, wait for TC, read reply until idle.
+ * Returns 1 if the reply header 3A A3 appeared in the stream. Bounded. */
 static int bms_exchange(const uint8_t *req, unsigned len)
 {
-    /* HALF-DUPLEX (как заводской FUN_080211f0): линия ОДНА (PD8/PD9 закорочены).
-     * На ПЕРЕДАЧУ драйвим PD8 как USART-TX (AF). */
+    /* HALF-DUPLEX (like factory FUN_080211f0): the line is SINGLE (PD8/PD9 shorted).
+     * For TRANSMIT we drive PD8 as USART-TX (AF). */
     GPIO_SET_CFG(BMS_TX_PORT, BMS_TX_PIN, GPIO_CFG_AF_PP_50);
 
-    /* Слить устаревшие RX-байты, чтобы парсить свежий ответ. */
+    /* Flush stale RX bytes so we parse a fresh reply. */
     while (USART_REG(USART2_BASE, USART_STAT_OFF) & USART_STAT_RBNE) {
         (void)USART_REG(USART2_BASE, USART_DATA_OFF);
     }
@@ -79,11 +79,11 @@ static int bms_exchange(const uint8_t *req, unsigned len)
         if (--t == 0U) { break; }
     }
 
-    /* HALF-DUPLEX: ОТПУСКАЕМ PD8 (вход), чтобы пак мог драйвить общий провод, а
-     * PD9 (USART-RX) его читал. БЕЗ этого наш TX-пин давил линию и мы слышали
-     * только собственное эхо (Test C/D: replies=0). Это и есть заводской свитч. */
+    /* HALF-DUPLEX: RELEASE PD8 (input) so the pack can drive the shared wire and
+     * PD9 (USART-RX) reads it. WITHOUT this our TX pin held the line down and we heard
+     * only our own echo (Test C/D: replies=0). This is exactly the factory switch. */
     GPIO_SET_CFG(BMS_TX_PORT, BMS_TX_PIN, GPIO_CFG_IN_FLOAT);
-    /* Слить эхо своей передачи, которое USART-RX мог захватить, пока PD8 драйвил. */
+    /* Flush the echo of our own transmit that USART-RX may have captured while PD8 was driving. */
     while (USART_REG(USART2_BASE, USART_STAT_OFF) & USART_STAT_RBNE) {
         (void)USART_REG(USART2_BASE, USART_DATA_OFF);
     }
@@ -136,7 +136,7 @@ void bms_init(void)
     USART_REG(USART2_BASE, USART_CTL0_OFF) =
         USART_CTL0_UEN | USART_CTL0_TEN | USART_CTL0_REN;
 
-    /* Заводской bring-up: разбудить линк, затем connect C1 x4 (CE при неудаче). */
+    /* Factory bring-up: wake the link, then connect C1 x4 (CE on failure). */
     (void)bms_exchange(F_CE, sizeof F_CE);
     for (int i = 0; i < 4; i++) {
         if (bms_exchange(F_C1, sizeof F_C1)) {
@@ -176,7 +176,7 @@ void bms_tick(void)
         g_bms_connected = 1U;
     } else {
         g_bms_connected = 0U;
-        (void)bms_exchange(F_CE, sizeof F_CE);   /* потеря кадра -> re-wake, как завод */
+        (void)bms_exchange(F_CE, sizeof F_CE);   /* frame loss -> re-wake, like factory */
     }
 }
 

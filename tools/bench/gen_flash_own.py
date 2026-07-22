@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 """
-gen_flash_own.py v2 — залить/откатить СВОЮ прошивку, шьём ТОЛЬКО page 1 (0x08018000).
+gen_flash_own.py v2 — flash/revert OUR firmware, writing ONLY page 1 (0x08018000).
 
-Обоснование (ревью Fable5): наш app (<2КБ) целиком в одной 2КБ-странице 0x08018000, наш
-код НЕ проверяет app-CRC 0x080ffffc, бутлоадер app не верифицирует → достаточно заменить
-ТОЛЬКО page 1 (наш vector table+код). Остальной заводской app (pages 2..208 + bank1) не
-трогаем → он дремлет (наши векторы к нему не идут), а откат = восстановить 1 страницу.
-Brick-окно ~6с вместо ~20с; откат тривиален.
+Rationale (Fable5 review): our app (<2KB) fits entirely in one 2KB page 0x08018000, our
+code does NOT check the app-CRC 0x080ffffc, the app bootloader doesn't verify → it suffices to replace
+ONLY page 1 (our vector table+code). The rest of the factory app (pages 2..208 + bank1) we don't
+touch → it lies dormant (our vectors don't point to it), and revert = restore 1 page.
+Brick window ~6s instead of ~20s; revert is trivial.
 
-Безопасность (ревью): halt+wdg-freeze с ASSERT DBGMCU==0x300 (иначе abort ДО стирания);
-BUSY-poll STAT после стирания; program «PG-раз + mwh + sleep6» (проверенный метод);
-READ-BACK VERIFY всей страницы перед reset run (mismatch → shutdown БЕЗ reset = обратимо).
+Safety (review): halt+wdg-freeze with ASSERT DBGMCU==0x300 (otherwise abort BEFORE erase);
+BUSY-poll STAT after erase; program "PG-once + mwh + sleep6" (proven method);
+READ-BACK VERIFY of the whole page before reset run (mismatch → shutdown WITHOUT reset = reversible).
 
   flash:  gen_flash_own.py flash  <own_fw.bin>              <out.cfg>
   revert: gen_flash_own.py revert <own_fw.bin> <stock_dump.bin> <out.cfg>
-          (revert восстанавливает СТОЛЬКО ЖЕ страниц, сколько шьёт flash — только их из дампа)
+          (revert restores THE SAME NUMBER of pages as flash writes — just those, from the dump)
 """
 import sys, struct
 BASE=0x08000000
-P1=0x08018000          # page 1 (наш vector table + код)
+P1=0x08018000          # page 1 (our vector table + code)
 PSIZE=0x800
 K0=0x40022004; C0=0x40022010; A0=0x40022014; ST0=0x4002200C
 
@@ -42,10 +42,10 @@ def main():
     mode = sys.argv[1]
     if mode == "flash":
         ownfw = open(sys.argv[2],'rb').read(); data = ownfw; out = sys.argv[3]
-    else:  # revert: npages из own_fw, ДАННЫЕ из дампа
+    else:  # revert: npages from own_fw, DATA from the dump
         ownfw = open(sys.argv[2],'rb').read(); data = open(sys.argv[3],'rb').read(); out = sys.argv[4]
     APP_REGION_END = 0x080ffffc
-    # npages = сколько страниц реально занимает НАШ app (по own_fw) — flash и revert трогают ровно их
+    # npages = how many pages OUR app actually occupies (per own_fw) — flash and revert touch exactly those
     last_nonff = P1 - BASE
     for off in range(P1-BASE, APP_REGION_END-BASE):
         if ownfw[off] != 0xFF:
@@ -53,20 +53,20 @@ def main():
     npages = ((last_nonff - (P1-BASE)) // PSIZE) + 1
     span = npages * PSIZE
     region = data[P1-BASE:P1-BASE+span]
-    words = struct.unpack('<%dI'%(span//4), region)   # слова всех N страниц
-    hws   = struct.unpack('<%dH'%(span//2), region)   # полуслова
+    words = struct.unpack('<%dI'%(span//4), region)   # words of all N pages
+    hws   = struct.unpack('<%dH'%(span//2), region)   # halfwords
     L=[HDR]
     # --- wdg freeze + ASSERT ---
-    # ВАЖНО: freeze ТОЛЬКО прямой записью. Форма `mww 0xE0042004 [expr {$cr(0)|0x300}]`
-    # ПАДАЕТ с mww usage-error на этом openocd (mww — нативная команда, не переваривает
-    # [expr] как аргумент) → openocd exit rc=1 ДО стирания. Проверено: flash_v2/finish/revert
-    # используют прямую запись и проходят. (if/set с [expr] — ок, они Jim-конструкции.)
+    # IMPORTANT: freeze ONLY via a direct write. The form `mww 0xE0042004 [expr {$cr(0)|0x300}]`
+    # FAILS with an mww usage-error on this openocd (mww is a native command, does not digest
+    # [expr] as an argument) → openocd exit rc=1 BEFORE erase. Verified: flash_v2/finish/revert
+    # use a direct write and pass. (if/set with [expr] is fine, those are Jim constructs.)
     L.append("mww 0xE0042004 0x00000300")
     L.append("mem2array wd 32 0xE0042004 1")
     L.append('if {[expr {$wd(0) & 0x300}] != 0x300} { echo "ABORT: wdg NOT frozen (DBGMCU=$wd(0))"; shutdown }')
     # --- unlock bank0 ---
     L.append(f"mww 0x{K0:08x} 0x45670123"); L.append(f"mww 0x{K0:08x} 0xCDEF89AB")
-    # --- erase каждой из N страниц + BUSY-poll ---
+    # --- erase each of the N pages + BUSY-poll ---
     for p in range(npages):
         pa = P1 + p*PSIZE
         L.append(f"# erase page 0x{pa:08x}")
@@ -75,7 +75,7 @@ def main():
         L.append(f'while {{$busy && $n < 200}} {{ mem2array s 32 0x{ST0:08x} 1; set busy [expr {{$s(0) & 1}}]; incr n; sleep 1 }}')
         L.append(f'if {{$busy}} {{ echo "ABORT: erase BUSY timeout page 0x{pa:08x}"; mww 0x{C0:08x} 0x00000080; shutdown }}')
         L.append(f"mww 0x{C0:08x} 0x00000000")
-    # --- program non-FF halfwords во всём span (PG once + mwh + sleep6) ---
+    # --- program non-FF halfwords across the whole span (PG once + mwh + sleep6) ---
     L.append(f"mww 0x{C0:08x} 0x00000001")
     nprog=0
     for i,hw in enumerate(hws):
@@ -83,7 +83,7 @@ def main():
             L.append(f"mwh 0x{P1+2*i:08x} 0x{hw:04x}; sleep 6"); nprog+=1
     L.append(f"mww 0x{C0:08x} 0x00000000")
     L.append(f"mww 0x{C0:08x} 0x00000080  # lock bank0")
-    # --- READ-BACK VERIFY всех N страниц перед reset run ---
+    # --- READ-BACK VERIFY of all N pages before reset run ---
     nwords = span // 4
     L.append(f"mem2array rb 32 0x{P1:08x} {nwords}")
     exp=" ".join("0x%08x"%w for w in words)
@@ -96,8 +96,8 @@ def main():
     L.append("shutdown")
     open(out,'w').write("\n".join(L)+"\n")
     print(f"[{mode}] cfg -> {out}")
-    print(f"страниц: {npages} (0x{P1:08x}..0x{P1+span-1:08x}), {nprog} non-FF полуслов, verify {nwords} слов")
-    print(f"строк: {len(L)}")
+    print(f"pages: {npages} (0x{P1:08x}..0x{P1+span-1:08x}), {nprog} non-FF halfwords, verify {nwords} words")
+    print(f"lines: {len(L)}")
     # sanity
     sp=words[0]; rst=words[1]
     print(f"vector SP=0x{sp:08x} Reset=0x{rst:08x}")

@@ -1,7 +1,7 @@
-# Контейнер-логгер: слушает TCP :9000 и пишет весь поток от сниффера в файл.
-# Запускать на машине 192.168.10.66 (та, что в secrets.h сниффера как LOG_HOST).
+# Logger container: listens on TCP :9000 and writes the whole sniffer stream to a file.
+# Run it on machine 192.168.10.66 (the one set as LOG_HOST in the sniffer's secrets.h).
 #   cd server/uart-logger && docker compose up -d
-#   лог: ./logs/mower-uart.log  (строки вида "A <millis> <hex>" / "B <millis> <hex>")
+#   log: ./logs/mower-uart.log  (lines like "A <millis> <hex>" / "B <millis> <hex>")
 
 services:
   uart-logger:

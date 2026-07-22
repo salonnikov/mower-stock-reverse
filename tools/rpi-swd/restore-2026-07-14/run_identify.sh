@@ -1,7 +1,7 @@
 #!/bin/bash
-# run_identify.sh — ТОЛЬКО ЧТЕНИЕ. Опознать прошивку chip1 + проверить связь.
-# Detached-стиль: переживает обрыв WiFi, пишет лог + маркер DONE.
-# Освобождает SWD (глушит openocd/сервисы), затем гоняет chip1-identify.cfg.
+# run_identify.sh — READ ONLY. Identify chip1 firmware + check the link.
+# Detached style: survives WiFi drops, writes a log + DONE marker.
+# Frees SWD (kills openocd/services), then runs chip1-identify.cfg.
 DIR="$(cd "$(dirname "$0")" && pwd)"
 LOG=/home/pi/identify.log
 : > "$LOG"
@@ -13,5 +13,5 @@ sleep 1
 sudo timeout 45 openocd -f "$DIR/chip1-identify.cfg" >> "$LOG" 2>&1
 echo "DONE rc=$? $(date -u +%H:%M:%S)" >> "$LOG"
 chmod 666 "$LOG" 2>/dev/null || true
-# NB: сервисы НЕ поднимаем обратно автоматически — SWD оставляем свободным
-#     на случай, если сразу пойдёт откат. Поднять poll: sudo systemctl start mower-openocd
+# NB: we do NOT bring the services back up automatically — we leave SWD free
+#     in case the rollback runs right away. To bring poll up: sudo systemctl start mower-openocd

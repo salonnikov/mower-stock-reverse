@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-swd.py — тонкий клиент к работающему OpenOCD (mower-openocd, telnet :4444).
-Запускать на МАЛИНЕ. Читает/пишет память и регистры БЕЗ halt (memory-AP).
+swd.py — thin client to the running OpenOCD (mower-openocd, telnet :4444).
+Run on the PI. Reads/writes memory and registers WITHOUT halt (memory-AP).
 
-Все bench-скрипты Фаз импортируют этот модуль. Ничего не меняет в сервисах,
-не делает halt/reset/shutdown. Только mdw/mww.
+All the bench Phase scripts import this module. It changes nothing in the services,
+does no halt/reset/shutdown. Only mdw/mww.
 
-Пред-условие: mower-openocd поднят, mower-webctl ОСТАНОВЛЕН (один telnet-клиент).
-Проверка связи:  python3 swd.py
+Precondition: mower-openocd is up, mower-webctl is STOPPED (single telnet client).
+Link check:  python3 swd.py
 """
 import socket
 import time
@@ -18,10 +18,10 @@ class SWD:
         self.s = socket.create_connection((host, port), timeout=5)
         self.s.settimeout(0.2)
         time.sleep(settle)
-        self._read_until_prompt(0.6)  # съесть баннер OpenOCD до приглашения '>'
+        self._read_until_prompt(0.6)  # consume the OpenOCD banner up to the '>' prompt
 
     def _read_until_prompt(self, deadline=0.8):
-        """Читает ответ OpenOCD до приглашения '>' или до тишины. Быстро."""
+        """Reads the OpenOCD response up to the '>' prompt or until silence. Fast."""
         buf = b""
         end = time.time() + deadline
         while time.time() < end:
@@ -42,7 +42,7 @@ class SWD:
         return self._read_until_prompt().strip()
 
     def mdw(self, addr, count=1):
-        """Читает count 32-битных слов. Возвращает список int."""
+        """Reads count 32-bit words. Returns a list of ints."""
         out = self.cmd("mdw 0x%08x %d" % (addr, count))
         vals = []
         for line in out.splitlines():
@@ -55,7 +55,7 @@ class SWD:
         return vals
 
     def mww(self, addr, val):
-        """Пишет одно 32-битное слово."""
+        """Writes one 32-bit word."""
         return self.cmd("mww 0x%08x 0x%08x" % (addr, val))
 
     def close(self):
@@ -66,20 +66,20 @@ class SWD:
 
 
 if __name__ == "__main__":
-    # Самопроверка связи + быстрый sanity-read.
+    # Link self-check + quick sanity-read.
     try:
         s = SWD()
     except Exception as e:
-        print("НЕТ СВЯЗИ с OpenOCD :4444 — проверь: mower-openocd поднят? "
-              "mower-webctl остановлен? (%s)" % e)
+        print("NO LINK to OpenOCD :4444 — check: is mower-openocd up? "
+              "is mower-webctl stopped? (%s)" % e)
         raise SystemExit(1)
     tgt = s.cmd("targets")
     print("targets:\n" + tgt)
     v = s.mdw(0x200000bc)
     if v:
-        print("SANITY: state @0x200000bc = 0x%08x (состояние=%d)" % (v[0], v[0] & 0xFF))
-        print("СВЯЗЬ ОК.")
+        print("SANITY: state @0x200000bc = 0x%08x (state=%d)" % (v[0], v[0] & 0xFF))
+        print("LINK OK.")
     else:
-        print("mdw не вернул данных — target не examined? Запусти 'targets' вручную, "
-              "при необходимости в openocd: 'gdb_memory_map disable'. НЕ делай halt.")
+        print("mdw returned no data — target not examined? Run 'targets' manually, "
+              "if needed in openocd: 'gdb_memory_map disable'. Do NOT halt.")
     s.close()

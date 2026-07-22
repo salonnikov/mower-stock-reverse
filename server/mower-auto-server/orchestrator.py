@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# Оркестратор + ЖИВОЙ веб-дашборд.
-#   data:7777 / ctrl:7778 — соединения от mower-auto;  web:8080 — статус в браузере.
-# Сам снимает дамп прошивки (esptool через мост), затем переходит в сниф.
+# Orchestrator + LIVE web dashboard.
+#   data:7777 / ctrl:7778 — connections from mower-auto;  web:8080 — status in the browser.
+# It captures the firmware dump itself (esptool over the bridge), then switches to sniff.
 import socket, os, pty, select, threading, subprocess, time, re, json
 from collections import deque
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -12,7 +12,7 @@ WEB_PORT  = int(os.environ.get("WEB_PORT", "8080"))
 OUT = os.environ.get("OUT", "/out")
 os.makedirs(OUT, exist_ok=True)
 
-ST = {"phase": "Жду подключения ESP", "data": False, "ctrl": False, "rx": 0, "tx": 0,
+ST = {"phase": "Waiting for ESP connection", "data": False, "ctrl": False, "rx": 0, "tx": 0,
       "alive": False, "dumping": False, "dump_size": 0, "dump_total": 4194304,
       "verdict": "", "dump_file": "", "sniff_last": ""}
 LOG = deque(maxlen=50)
@@ -32,33 +32,33 @@ h2{margin:0 0 12px}.row{display:flex;gap:12px;flex-wrap:wrap}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
 pre{background:#0a0d12;border:1px solid #2a313c;border-radius:8px;padding:10px;max-height:240px;overflow:auto;font-size:12px}
 .big{font-size:26px}</style>
-<h2>🤖 mower-auto — живой статус</h2>
+<h2>🤖 mower-auto — live status</h2>
 <div class=row>
- <div class=card><div class=k>ESP (наша плата)</div><div class=v id=esp>—</div></div>
- <div class=card><div class=k>Косилка</div><div class=v id=alive>—</div></div>
- <div class=card><div class=k>Сигнал от косилки</div><div class=v id=rx>0 Б</div></div>
- <div class=card><div class=k>Фаза</div><div class=v id=phase>—</div></div>
+ <div class=card><div class=k>ESP (our board)</div><div class=v id=esp>—</div></div>
+ <div class=card><div class=k>Mower</div><div class=v id=alive>—</div></div>
+ <div class=card><div class=k>Signal from mower</div><div class=v id=rx>0 B</div></div>
+ <div class=card><div class=k>Phase</div><div class=v id=phase>—</div></div>
 </div>
 <div class=card style=margin-top:12px>
- <div class=k>Дамп прошивки</div>
+ <div class=k>Firmware dump</div>
  <div class="v big" id=dump>—</div>
  <div class=bar><i id=bar></i></div>
  <div class=v id=verdict style=margin-top:8px></div>
 </div>
-<div class=card style=margin-top:12px><div class=k>Лог</div><pre id=log></pre></div>
-<div class=card style=margin-top:12px><div class=k>Последний сниф (hex)</div><pre id=sniff></pre></div>
+<div class=card style=margin-top:12px><div class=k>Log</div><pre id=log></pre></div>
+<div class=card style=margin-top:12px><div class=k>Last sniff (hex)</div><pre id=sniff></pre></div>
 <script>
 let lastRx=0,aliveTick=0;
 async function t(){try{let s=await(await fetch('/state')).json();
- document.getElementById('esp').innerHTML=(s.data?'<span class="dot" style="background:#3fb950"></span>':'<span class="dot" style="background:#f85149"></span>')+(s.data?'подключена':'нет связи');
+ document.getElementById('esp').innerHTML=(s.data?'<span class="dot" style="background:#3fb950"></span>':'<span class="dot" style="background:#f85149"></span>')+(s.data?'connected':'no link');
  let mov=s.rx>lastRx; lastRx=s.rx; if(mov)aliveTick=6; if(aliveTick>0)aliveTick--;
- document.getElementById('alive').innerHTML=(aliveTick>0?'<span class="ok">● ожила, шлёт</span>':(s.rx>0?'<span class="warn">○ молчит</span>':'<span class="no">— тишина</span>'));
- document.getElementById('rx').textContent=s.rx.toLocaleString()+' Б';
+ document.getElementById('alive').innerHTML=(aliveTick>0?'<span class="ok">● alive, sending</span>':(s.rx>0?'<span class="warn">○ silent</span>':'<span class="no">— silence</span>'));
+ document.getElementById('rx').textContent=s.rx.toLocaleString()+' B';
  document.getElementById('phase').textContent=s.phase;
  let pct=s.dump_total? Math.min(100,Math.round(s.dump_size*100/s.dump_total)):0;
- document.getElementById('dump').textContent=s.dumping?('идёт... '+pct+'%'):(s.dump_file?'готов':'—');
+ document.getElementById('dump').textContent=s.dumping?('in progress... '+pct+'%'):(s.dump_file?'ready':'—');
  document.getElementById('bar').style.width=pct+'%';
- document.getElementById('verdict').innerHTML=s.verdict?('<span class="'+(s.verdict.includes('НОРМ')?'ok':'warn')+'">'+s.verdict+'</span>'):'';
+ document.getElementById('verdict').innerHTML=s.verdict?('<span class="'+(s.verdict.includes('NORMAL')?'ok':'warn')+'">'+s.verdict+'</span>'):'';
  document.getElementById('log').textContent=s.log.join('\\n');
  document.getElementById('sniff').textContent=s.sniff_last;
 }catch(e){}}
@@ -78,20 +78,20 @@ class H(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(b))); self.end_headers(); self.wfile.write(b)
 
 threading.Thread(target=lambda: ThreadingHTTPServer(("0.0.0.0", WEB_PORT), H).serve_forever(), daemon=True).start()
-log("веб-дашборд на :%d" % WEB_PORT)
+log("web dashboard on :%d" % WEB_PORT)
 
 def listen(port):
     s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(("0.0.0.0", port)); s.listen(1); return s
 
 ls_data, ls_ctrl = listen(DATA_PORT), listen(CTRL_PORT)
-log("жду ESP: data:%d ctrl:%d" % (DATA_PORT, CTRL_PORT))
+log("waiting for ESP: data:%d ctrl:%d" % (DATA_PORT, CTRL_PORT))
 
 def handle():
-    ST.update(phase="Жду подключения ESP", data=False, ctrl=False, alive=False, dumping=False,
+    ST.update(phase="Waiting for ESP connection", data=False, ctrl=False, alive=False, dumping=False,
               dump_size=0, verdict="", dump_file="", sniff_last="")
-    data, _ = ls_data.accept(); ST["data"] = True; log("ESP data подключилась")
-    ctrl, _ = ls_ctrl.accept(); ST["ctrl"] = True; log("ESP ctrl подключилась")
+    data, _ = ls_data.accept(); ST["data"] = True; log("ESP data connected")
+    ctrl, _ = ls_ctrl.accept(); ST["ctrl"] = True; log("ESP ctrl connected")
     mfd, sfd = pty.openpty(); slave = os.ttyname(sfd)
     stop = threading.Event(); sniff = threading.Event()
     sf = open(f"{OUT}/sniff.log", "ab", buffering=0)
@@ -101,16 +101,16 @@ def handle():
         while not stop.is_set():
             try: r, _, _ = select.select([data, mfd], [], [], 0.2)
             except Exception: break
-            if data in r:                       # ОТ косилки (mower -> мы)
+            if data in r:                       # FROM the mower (mower -> us)
                 try: d = data.recv(4096)
                 except Exception: d = b''
                 if d == b'': break
                 if d:
                     os.write(mfd, d); ST["rx"] += len(d)
-                    ST["sniff_last"] = " ".join("%02X" % b for b in d[-32:])   # сырьё от косилки, всегда
+                    ST["sniff_last"] = " ".join("%02X" % b for b in d[-32:])   # raw from mower, always
                     if sniff.is_set():
                         sf.write(("%d %s\n" % (int(time.time()*1000), " ".join("%02X" % b for b in d))).encode())
-            if mfd in r:                        # В косилку (esptool -> mower)
+            if mfd in r:                        # TO the mower (esptool -> mower)
                 try: d = os.read(mfd, 4096)
                 except OSError: d = b''
                 if d:
@@ -120,8 +120,8 @@ def handle():
         stop.set()
     threading.Thread(target=bridge, daemon=True).start()
 
-    ctrl.sendall(b'0'); ST["phase"] = "Готов к дампу — ПЕРЕДЁРНИ ПИТАНИЕ КОСИЛКИ"
-    log("P->LOW. >>> ПЕРЕДЁРНИ ПИТАНИЕ КОСИЛКИ <<<")
+    ctrl.sendall(b'0'); ST["phase"] = "Ready to dump — POWER-CYCLE THE MOWER"
+    log("P->LOW. >>> POWER-CYCLE THE MOWER <<<")
     ts = time.strftime("%Y%m%d-%H%M%S"); dump = f"{OUT}/mower-esp-{ts}.bin"; ok = False
 
     def watch_size():
@@ -141,25 +141,25 @@ def handle():
         ST["dumping"] = False
         if r.returncode == 0 and os.path.exists(dump) and os.path.getsize(dump) > 1_000_000:
             ok = True; ST["dump_file"] = os.path.basename(dump); ST["dump_size"] = os.path.getsize(dump)
-            log("*** ДАМП СНЯТ:", dump); break
-        ST["phase"] = "Жду загрузчик (передёрни питание косилки)"; time.sleep(2)
+            log("*** DUMP CAPTURED:", dump); break
+        ST["phase"] = "Waiting for bootloader (power-cycle the mower)"; time.sleep(2)
 
     if ok:
         d = open(dump, "rb").read(); n = len(d); ff = d.count(0xff)*100//n
         stc = len(re.findall(rb'[ -~]{6,}', d))
-        v = "НОРМАЛЬНАЯ прошивка — есть протокол!" if (stc > 300 and ff < 90) else ("почти пусто" if ff > 95 else "ВОЗМОЖНО ЗАШИФРОВАНА")
-        ST["verdict"] = v; log("вердикт:", v, "(size=%d FF=%d%% strings=%d)" % (n, ff, stc))
+        v = "NORMAL firmware — protocol present!" if (stc > 300 and ff < 90) else ("almost empty" if ff > 95 else "POSSIBLY ENCRYPTED")
+        ST["verdict"] = v; log("verdict:", v, "(size=%d FF=%d%% strings=%d)" % (n, ff, stc))
     else:
-        log("дамп не снят — перехожу в сниф.")
+        log("dump not captured — switching to sniff.")
 
-    ctrl.sendall(b'1'); ST["phase"] = "СНИФ (пишу sniff.log)"; sniff.set()
-    log("P release. Сниф. (для норм. работы косилки передёрни питание ещё раз)")
+    ctrl.sendall(b'1'); ST["phase"] = "SNIFF (writing sniff.log)"; sniff.set()
+    log("P release. Sniff. (for normal mower operation, power-cycle once more)")
     while not stop.is_set(): time.sleep(1)
-    log("ESP отключилась.")
+    log("ESP disconnected.")
     for x in (data, ctrl, sf):
         try: x.close()
         except Exception: pass
 
 while True:
     try: handle()
-    except Exception as e: log("ошибка:", e); time.sleep(2)
+    except Exception as e: log("error:", e); time.sleep(2)

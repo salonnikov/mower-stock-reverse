@@ -31,7 +31,7 @@ def f64(lo,hi): return struct.unpack("<d",struct.pack("<II",lo,hi))[0]
 def ok(p): return 0x20000000<=p<0x20020000
 
 s=conn()
-# защёлкиваем указатели
+# latch the pointers
 p_pose=words(s,0x20000090,1)[0]
 p_head=words(s,0x2000039c,1)[0]
 a=words(s,0x200003a8,1)[0]
@@ -39,8 +39,8 @@ p_bd=words(s,a+4,1)[0] if ok(a) else 0
 print("ptr pose=%08x head=%08x bd_outer=%08x bd=%08x"%(p_pose,p_head,a,p_bd))
 print("state=",words(s,0x200000bc,1)[0])
 if not(ok(p_pose) and ok(p_head)):
-    print("!!! указатели не защёлкнулись (косилка под питанием? чтение без halt идёт?) — стоп"); sys.exit(1)
-print("OK, пишу",OUT,"в течение",DUR,"с")
+    print("!!! pointers did not latch (mower powered? reading without halt?) — stop"); sys.exit(1)
+print("OK, writing",OUT,"for",DUR,"s")
 f=open(OUT,"w",buffering=1)
 f.write("t,state,x,y,heading,dist,ls,rs,sls,srs,lf\n")
 t0=time.time()

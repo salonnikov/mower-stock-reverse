@@ -1,5 +1,5 @@
 === P1 SNAPSHOT  state=idle  (SWD non-halt, chip1 factory) ===
-(halt НЕ делался; значения живые)
+(halt NOT performed; values are live)
 
 state(0x200000bc)              @0x200000bc : 00000003
 RCU AHBEN/APB2EN/APB1EN        @0x40021014 : 00000057 0000527d 184e000f
@@ -13,7 +13,7 @@ GPIOC CTL0/CTL1/ISTAT/OCTL     @0x40011000 : b8000004 44444bbb 00000041 00000040
 GPIOD CTL0/CTL1/ISTAT/OCTL     @0x40011400 : 34433444 88883343 0000f398 0000f198
 GPIOE CTL0/CTL1/ISTAT/OCTL     @0x40011800 : 34748873 44434434 00009c85 0000108d
 
---- A4963 driver shadow regs (deref указателей) ---
-BLADE  ptr@0x20000540 = 0x00000000  (объект не создан / не в SRAM)
-LEFT   ptr@0x2000054c = 0x00000000  (объект не создан / не в SRAM)
-RIGHT  ptr@0x2000057c = 0x00000000  (объект не создан / не в SRAM)
+--- A4963 driver shadow regs (deref pointers) ---
+BLADE  ptr@0x20000540 = 0x00000000  (object not created / not in SRAM)
+LEFT   ptr@0x2000054c = 0x00000000  (object not created / not in SRAM)
+RIGHT  ptr@0x2000057c = 0x00000000  (object not created / not in SRAM)

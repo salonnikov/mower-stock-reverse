@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Монитор перехода idle->движение (Вариант 1): ловит, как поднимается драйвер колеса
-и оживает PWM/одометрия. ТОЛЬКО ЧТЕНИЕ.
-Запуск:  ./watch_drive.py [секунд]   (по умолчанию 35)
-Печатает строку каждые ~0.3с: время, state, lmdrv, rmdrv, CH2CV, CH3CV,
-и первые слова объекта левого драйвера (для поиска тик-счётчика).
+Monitor of the idle->motion transition (Variant 1): catches how the wheel driver comes up
+and PWM/odometry come alive. READ ONLY.
+Run:  ./watch_drive.py [seconds]   (default 35)
+Prints a line every ~0.3s: time, state, lmdrv, rmdrv, CH2CV, CH3CV,
+and the first words of the left driver object (to locate the tick counter).
 """
 import sys
 import time
@@ -22,7 +22,7 @@ while time.time() - t0 < dur:
     ch3 = (S.mdw(0x40000440) or [0])[0]
     tail = ""
     if lm:
-        w = S.mdw(lm + 0x18, 7)  # окно, где вероятны поля скорости/тиков
+        w = S.mdw(lm + 0x18, 7)  # window where speed/tick fields are likely
         tail = " ".join("%08x" % x for x in w)
     print("%5.1f  %2d  0x%08x  0x%08x  %04x  %04x  | %s"
           % (time.time() - t0, st, lm, rm, ch2, ch3, tail), flush=True)

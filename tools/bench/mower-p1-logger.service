@@ -1,6 +1,6 @@
 [Unit]
 Description=MOWER P1 SWD drive-state logger (chip1 A4963/PWM/state, non-halt)
-# Стартовать после openocd; если openocd перезапустится — демон сам реконнектит.
+# Start after openocd; if openocd restarts — the daemon reconnects on its own.
 After=mower-openocd.service network-online.target
 Wants=mower-openocd.service
 
@@ -8,11 +8,11 @@ Wants=mower-openocd.service
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/mower-bench
-# Запуск через shebang (#!/usr/bin/env python3) — без слова python3 в systemd/ssh.
+# Launch via shebang (#!/usr/bin/env python3) — without the word python3 in systemd/ssh.
 ExecStart=/home/pi/mower-bench/p1_logger_daemon.py
 Restart=always
 RestartSec=3
-# Не глушить при коротких падениях линка (демон сам реконнектит вечно).
+# Don't give up on short link drops (the daemon reconnects forever on its own).
 StartLimitIntervalSec=0
 
 [Install]

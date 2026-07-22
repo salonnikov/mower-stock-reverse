@@ -10,9 +10,9 @@ names={1:"3V3",2:"5V",3:"GPIO2 SDA",4:"5V",5:"GPIO3 SCL",6:"GND",7:"GPIO4",8:"GP
 31:"GPIO6",32:"GPIO12",33:"GPIO13",34:"GND",35:"GPIO19",36:"GPIO16",37:"GPIO26",38:"GPIO20",
 39:"GND",40:"GPIO21"}
 target={6,18,22}
-d.text((20,16),"Raspberry Pi 2 — GPIO (40 pin, J8)   подключение SWD к мейнборду косилки (GD32F305)",fill=YEL,font=F(22))
-d.text((20,48),"Паять только 3 провода. Питание (3V3/5V) НЕ подключать — у косилки своё.",fill=WHT,font=F(16))
-d.text((20,74),"ОРИЕНТАЦИЯ: пин 1 = единственный КВАДРАТНЫЙ пятак на плате (остальные круглые). От него весь отсчёт.",fill=ORN,font=F(16))
+d.text((20,16),"Raspberry Pi 2 — GPIO (40 pin, J8)   SWD connection to the mower mainboard (GD32F305)",fill=YEL,font=F(22))
+d.text((20,48),"Solder only 3 wires. Do NOT connect power (3V3/5V) — the mower has its own.",fill=WHT,font=F(16))
+d.text((20,74),"ORIENTATION: pin 1 = the only SQUARE pad on the board (the rest are round). Count from it.",fill=ORN,font=F(16))
 lx,rx,y0,dy,bw,bh=400,600,135,41,34,30
 def pin(num,cx,cy,left):
     box=(cx-bw//2,cy-bh//2,cx+bw//2,cy+bh//2); hl=num in target
@@ -25,13 +25,13 @@ def pin(num,cx,cy,left):
     else:    d.text((cx+bw//2+12,cy-7),nm,fill=col,font=f)
 for r in range(20):
     cy=y0+r*dy; pin(2*r+1,lx,cy,True); pin(2*r+2,rx,cy,False)
-# указатель на пин 1
+# pointer to pin 1
 d.line([(250,y0),(lx-bw//2-4,y0)],fill=YEL,width=3)
 d.polygon([(lx-bw//2-4,y0),(lx-bw//2-20,y0-8),(lx-bw//2-20,y0+8)],fill=YEL)
-d.text((30,y0-12),"ПИН 1 = квадрат",fill=YEL,font=F(17))
-d.text((lx-40,y0-42),"▲ ВЕРХ (край платы, у microSD/USB)",fill=WHT,font=F(14))
-d.text((lx-10,y0+20*dy-4),"▼ НИЗ",fill=WHT,font=F(14))
-# выноски
+d.text((30,y0-12),"PIN 1 = square",fill=YEL,font=F(17))
+d.text((lx-40,y0-42),"▲ TOP (board edge, near microSD/USB)",fill=WHT,font=F(14))
+d.text((lx-10,y0+20*dy-4),"▼ BOTTOM",fill=WHT,font=F(14))
+# callouts
 cal={6:200,18:470,22:560}
 txts={6:"GND → SWD GND",18:"GPIO24 → SWD DIO (SWDIO)",22:"GPIO25 → SWD CLK (SWCLK)"}
 for num in sorted(target):

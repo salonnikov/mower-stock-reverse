@@ -1,12 +1,12 @@
 #!/bin/bash
-# run_latch_hold_test.sh — ловит chip1 в окне удержания кнопки и запускает
-# latch_hold_test.cfg (выставляет защёлку по SWD + мониторит 25с).
-# Повторяет запуск openocd, пока не поймает живой чип; поймав — даёт тест-сеансу
-# отработать целиком (не убивает). Detached, лог /home/pi/latch.log.
+# run_latch_hold_test.sh — catches chip1 in the button-hold window and runs
+# latch_hold_test.cfg (drives the latch over SWD + monitors 25s).
+# Retries openocd until it catches a live chip; once caught — lets the test session
+# run to completion (does not kill it). Detached, log /home/pi/latch.log.
 DIR="$(cd "$(dirname "$0")" && pwd)"
 LOG=/home/pi/latch.log
 : > "$LOG"
-echo "START latch-test $(date -u +%H:%M:%S)  (ДЕРЖИ кнопку пока не увидишь ASSERTED)" >> "$LOG"
+echo "START latch-test $(date -u +%H:%M:%S)  (HOLD the button until you see ASSERTED)" >> "$LOG"
 sudo systemctl stop mower-openocd    2>/dev/null || true
 sudo systemctl stop mower-p1-logger  2>/dev/null || true
 sudo pkill -9 -f openocd 2>/dev/null || true

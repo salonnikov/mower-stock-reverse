@@ -25,9 +25,12 @@ below. **If you want to take it further, please do** — everything you need to 
 > key pulled. There is no official schematic (closed OEM); everything here was recovered by
 > reverse engineering the two factory GD32 firmwares.
 
-> **Language:** the primary layer of this repo is **English**. The original Russian working
-> notes are preserved verbatim under [`ru/`](ru/) (active docs mirror the primary tree;
-> historical / superseded material is under [`ru/archive/`](ru/archive/)).
+> **Language:** the primary layer of this repo is **English**. If you'd rather read everything
+> in Russian — or simply find it easier to take the information in that way — there is a
+> dedicated [`ru/`](ru/) directory where all of it is kept in Russian. The project was
+> originally written entirely in Russian (that was the convenient working language), so `ru/`
+> holds the original notes verbatim: active docs mirror the primary tree, and historical /
+> superseded material is under [`ru/archive/`](ru/archive/).
 
 ---
 

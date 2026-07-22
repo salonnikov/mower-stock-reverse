@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
@@ -107,10 +107,10 @@
   <!-- status -->
   <div class="card">
     <div class="statusrow">
-      <div class="pill"><span class="dot" id="aliveDot"></span><b id="aliveTxt">нет связи</b></div>
+      <div class="pill"><span class="dot" id="aliveDot"></span><b id="aliveTxt">no link</b></div>
       <div class="pill"><span class="dot" id="armDot"></span><span id="stateTxt">—</span></div>
-      <div class="pill" id="chargePill" style="display:none">🔌 <span>заряд</span></div>
-      <div class="pill" id="btnPill" style="display:none">⏻ <span>кнопка</span></div>
+      <div class="pill" id="chargePill" style="display:none">🔌 <span>charging</span></div>
+      <div class="pill" id="btnPill" style="display:none">⏻ <span>button</span></div>
       <div class="pill"><span class="dim">hb</span>&nbsp;<span id="hbTxt" style="font-variant-numeric:tabular-nums">—</span></div>
     </div>
     <div class="batt">
@@ -126,7 +126,7 @@
 
   <!-- A4963 diagnostics -->
   <div class="card">
-    <div class="diaghdr">A4963 диагностика <span class="sub">рег. фолтов по SPI (MISO)</span></div>
+    <div class="diaghdr">A4963 diagnostics <span class="sub">fault register over SPI (MISO)</span></div>
     <div id="diagWrap">
       <div class="diagrow" id="diagL"><span class="diagname">LEFT</span><span class="diaghex">—</span><span class="diagflags"></span></div>
       <div class="diagrow" id="diagR"><span class="diagname">RIGHT</span><span class="diaghex">—</span><span class="diagflags"></span></div>
@@ -147,7 +147,7 @@
       <div class="slider disabled" id="slR"><div class="mid"></div><div class="knob">RIGHT</div></div>
     </div>
     <div class="err" id="errTxt"></div>
-    <div class="footer">слайдеры пружинят в 0 при отпускании · dead-man: прошивка 200 мс / сервер 1 с</div>
+    <div class="footer">sliders spring back to 0 on release · dead-man: firmware 200 ms / server 1 s</div>
   </div>
 </div>
 
@@ -156,10 +156,10 @@
 const SPEED_MAX = 7200;
 const $ = id => document.getElementById(id);
 
-// ---------- состояние ----------
-let armed = false;          // подтверждённое сервером
+// ---------- state ----------
+let armed = false;          // confirmed by the server
 let telemAlive = false;
-let drive = {l: 0, r: 0};   // текущее желание пользователя
+let drive = {l: 0, r: 0};   // current user intent
 let lastSent = {l: 0, r: 0};
 let bladeOn = false;
 let bladeConfirmT = 0;
@@ -177,7 +177,7 @@ async function api(path, body){
   return j;
 }
 
-// ---------- телеметрия (poll ~4 Гц) ----------
+// ---------- telemetry (poll ~4 Hz) ----------
 async function poll(){
   let t;
   try { t = await api('/api/telemetry'); }
@@ -186,10 +186,10 @@ async function poll(){
 
   const dot = $('aliveDot');
   dot.className = 'dot ' + (t.alive ? 'ok' : (t.connected ? 'warn' : ''));
-  $('aliveTxt').textContent = t.alive ? 'LIVE' : (t.connected ? 'FW HUNG?' : 'НЕТ СВЯЗИ');
+  $('aliveTxt').textContent = t.alive ? 'LIVE' : (t.connected ? 'FW HUNG?' : 'NO LINK');
   $('hbTxt').textContent = t.heartbeat !== undefined ? t.heartbeat : '—';
 
-  // arm-состояние берём от сервера (истина = что реально записано)
+  // take arm state from the server (truth = what was actually written)
   if (t.armed !== undefined && t.armed !== armed) setArmedUI(t.armed);
   $('armDot').className = 'dot ' + (t.armed_fw ? 'ok' : 'warn');
   $('stateTxt').textContent = t.fw_state_name || '—';
@@ -224,13 +224,13 @@ function renderDiag(rowId, d){
   const flagsEl = row.querySelector('.diagflags');
   if (!d){ hexEl.textContent = '—'; hexEl.className = 'diaghex dim'; flagsEl.innerHTML = ''; return; }
   hexEl.textContent = d.hex;
-  if (!d.valid){                    // 0xFFFF или reserved-биты -> нет отклика
+  if (!d.valid){                    // 0xFFFF or reserved bits -> no response
     hexEl.className = 'diaghex bad';
-    flagsEl.innerHTML = '<span class="fbit">SPI FAIL / нет отклика</span>';
+    flagsEl.innerHTML = '<span class="fbit">SPI FAIL / no response</span>';
     return;
   }
   hexEl.className = 'diaghex ' + (d.ok ? 'ok' : 'bad');
-  if (d.ok){ flagsEl.innerHTML = '<span class="fnone">✓ без фолтов</span>'; return; }
+  if (d.ok){ flagsEl.innerHTML = '<span class="fnone">✓ no faults</span>'; return; }
   flagsEl.innerHTML = (d.flags || [])
     .map(f => `<span class="fbit" title="${f.long}">${f.short}</span>`).join('');
 }
@@ -271,18 +271,18 @@ $('stopBtn').onclick = async () => {
   setArmedUI(false);
 };
 
-// нож: двухшаговое подтверждение (нажал -> 3 c на подтверждение -> нажал ещё раз)
+// blade: two-step confirmation (press -> 3 s to confirm -> press again)
 $('bladeBtn').onclick = async () => {
   err('');
   const now = Date.now();
-  if (bladeOn){                     // выключение — сразу, без подтверждения
+  if (bladeOn){                     // turning off — immediately, no confirmation
     try { await api('/api/blade', {on:false}); setBladeUI(false); }
     catch(e){ err('blade: ' + e.message); }
     return;
   }
   if (!bladeConfirmT || now - bladeConfirmT > 3000){
     bladeConfirmT = now;
-    $('bladeBtn').textContent = '⚠ ТОЧНО ВКЛЮЧИТЬ НОЖ?';
+    $('bladeBtn').textContent = '⚠ REALLY TURN ON BLADE?';
     $('bladeBtn').className = 'confirm';
     setTimeout(() => { if (bladeConfirmT && Date.now() - bladeConfirmT >= 3000) setBladeUI(false); }, 3100);
     return;
@@ -291,11 +291,11 @@ $('bladeBtn').onclick = async () => {
   catch(e){ err('blade: ' + e.message); setBladeUI(false); }
 };
 
-// ---------- слайдеры (pointer events, пружина в 0) ----------
+// ---------- sliders (pointer events, spring back to 0) ----------
 function makeSlider(el, onChange){
   const knob = el.querySelector('.knob');
   let active = false, pid = null;
-  function setPos(frac){ // frac: -1..1 (вверх = +)
+  function setPos(frac){ // frac: -1..1 (up = +)
     frac = Math.max(-1, Math.min(1, frac));
     const h = el.clientHeight, kh = knob.offsetHeight;
     const travel = (h - kh) / 2;
@@ -321,8 +321,8 @@ function makeSlider(el, onChange){
   function release(ev){
     if (!active || (ev && ev.pointerId !== pid)) return;
     active = false; el.classList.remove('active');
-    setPos(0);            // ПРУЖИНА: отпустил = 0
-    sendDriveNow();       // немедленно, не ждём тика
+    setPos(0);            // SPRING: released = 0
+    sendDriveNow();       // immediately, don't wait for the tick
   }
   el.addEventListener('pointerup', release);
   el.addEventListener('pointercancel', release);
@@ -333,7 +333,7 @@ const slL = makeSlider($('slL'), v => { drive.l = v; });
 const slR = makeSlider($('slR'), v => { drive.r = v; });
 function resetSlider(el){ if (el._reset) el._reset(); }
 
-// ---------- отправка drive (~5 Гц пока armed; всегда шлём при изменении) ----------
+// ---------- sending drive (~5 Hz while armed; always send on change) ----------
 let sendBusy = false;
 async function sendDriveNow(){
   if (sendBusy) return;
@@ -348,12 +348,12 @@ setInterval(() => {
   if (!armed) return;
   const moving = drive.l || drive.r;
   const changed = drive.l !== lastSent.l || drive.r !== lastSent.r;
-  // пока едем — шлём постоянно (сервер это второе звено dead-man);
-  // при изменении (в т.ч. в 0) — тоже шлём
+  // while driving — send continuously (the server is the second dead-man link);
+  // on change (including to 0) — also send
   if (moving || changed) sendDriveNow();
 }, 200);
 
-// страховка: ушли со страницы — стоп
+// safety net: left the page — stop
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && armed && navigator.sendBeacon)
     navigator.sendBeacon('/api/stop', new Blob(['{}'], {type:'application/json'}));

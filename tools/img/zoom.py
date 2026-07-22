@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw
 src="/img/1782670345_AQADpx9rG3KxCUp-.jpg"
 im=Image.open(src).convert("RGB")
-# обрезаем зону гребёнки и увеличиваем x3
+# crop the header zone and enlarge x3
 box=(450,330,900,680)
 c=im.crop(box).resize(((900-450)*2,(680-330)*2))
 d=ImageDraw.Draw(c)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Снять образ флеша через работающий openocd (:4444, dump_image), БЕЗ halt.
-Usage: ./flash_dump.py <outfile> <addr> <size>   напр. /tmp/cur.bin 0x08000000 0x100000
-Только чтение памяти. Ждёт завершения до 300с."""
+"""Take a flash image via the running openocd (:4444, dump_image), WITHOUT halt.
+Usage: ./flash_dump.py <outfile> <addr> <size>   e.g. /tmp/cur.bin 0x08000000 0x100000
+Memory read only. Waits up to 300s for completion."""
 import sys
 import time
 import socket

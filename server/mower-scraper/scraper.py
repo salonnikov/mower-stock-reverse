@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Скрапер: опрашивает локальную страницу ESP /data и сохраняет ВСЮ сессию.
-# Прошивку не трогаем. Дедуп по содержимому строки (в каждом кадре уникальный ms).
+# Scraper: polls the local ESP /data page and saves the WHOLE session.
+# We do not touch the firmware. Dedup by line content (each frame has a unique ms).
 import urllib.request, json, time, os, re
 from collections import deque
 
