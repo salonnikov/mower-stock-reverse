@@ -25,6 +25,18 @@ below. **If you want to take it further, please do** — everything you need to 
 > key pulled. There is no official schematic (closed OEM); everything here was recovered by
 > reverse engineering the two factory GD32 firmwares.
 
+### How this was produced (honesty note)
+
+The decompilation and the analysis in this repository were done with heavy use of **Claude Code
+(Opus 4.8)** as an assistant. I re-checked the findings by hand, but there are caveats — the
+agent dramatically sped the work up, and that is exactly *why* it was done this way rather than
+as a purely manual teardown.
+
+This note is here so no outside reader gets the illusion that all of this was hand-cranked over
+two years — it wasn't. Treat the contents as **agent-assisted reverse engineering**, verified
+where practical. Anything you intend to rely on (addresses, register values, flashing steps)
+should be double-checked against the actual dumps / real hardware before you trust it.
+
 > **Language:** the primary layer of this repo is **English**. If you'd rather read everything
 > in Russian — or simply find it easier to take the information in that way — there is a
 > dedicated [`ru/`](ru/) directory where all of it is kept in Russian. The project was
