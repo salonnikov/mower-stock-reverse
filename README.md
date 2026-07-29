@@ -1,29 +1,19 @@
 # MOWER — reverse engineering of the VILLARTEC MI 302 robot lawn mower
 
-## Introduction
+A from-scratch teardown of the **stock control board** of a robot lawn mower: both factory
+firmwares decompiled, a full architecture / peripheral / subsystem map, a working SWD
+flash / dump / restore toolchain, and a custom chip1 firmware that runs on the real hardware.
+There is no OEM schematic — everything here was recovered from the two factory GD32 firmwares
+and from the board itself.
 
-This is a from-scratch reverse engineering of the **stock control board** of a robot lawn
-mower. The board is not unique to one product: the same base design (a GD32 main MCU + a GD32
-boundary-sensor MCU + an ESP32 display + Fortior FU6832N BLDC drivers) is shared across **many
-rebranded mowers** on the market, so the findings here should apply well beyond the specific
-VILLARTEC MI 302 unit we worked on.
+The same base design (GD32 main MCU + GD32 boundary-sensor MCU + ESP32 display + Fortior FU6832N
+BLDC drivers) turns up in mowers sold under other brands, so most of this is not specific to the
+MI 302.
 
-The work covers both factory firmwares decompiled from scratch, a complete architecture /
-peripheral / subsystem map, a working SWD flash / dump / restore toolchain, and a custom chip1
-firmware that runs on the real hardware. This repository is the consolidated knowledge base of
-everything we found.
-
-**It is not finished.** The core reverse engineering is solid and verified on real hardware, but
-the project never reached its final goal — see *[Main unsolved problem](#-main-unsolved-problem--the-motors-never-spun-on-our-firmware)*
-below. **If you want to take it further, please do** — everything you need to continue is here.
-
-> **Why it stopped:** our physical board **died** — rain got into the mower and the **power
-> section failed**. So the work is frozen where it is; this repo is published so the knowledge
-> isn't lost and anyone with the same base board can pick it up.
-
-> ⚠️ **Blade + 20 V Li-ion.** Any work involving the blade — only with the battery removed /
-> key pulled. There is no official schematic (closed OEM); everything here was recovered by
-> reverse engineering the two factory GD32 firmwares.
+**Unfinished.** The reverse engineering is verified on hardware, but the wheels never spun under
+our own firmware — see [Main unsolved problem](#main-unsolved-problem--the-wheels-never-spun-on-our-firmware).
+Then the board died (water ingress took out the power section) and the work stopped there.
+Everything needed to carry it on is in this repo.
 
 ### How this was produced (honesty note)
 
@@ -37,12 +27,9 @@ two years — it wasn't. Treat the contents as **agent-assisted reverse engineer
 where practical. Anything you intend to rely on (addresses, register values, flashing steps)
 should be double-checked against the actual dumps / real hardware before you trust it.
 
-> **Language:** the primary layer of this repo is **English**. If you'd rather read everything
-> in Russian — or simply find it easier to take the information in that way — there is a
-> dedicated [`ru/`](ru/) directory where all of it is kept in Russian. The project was
-> originally written entirely in Russian (that was the convenient working language), so `ru/`
-> holds the original notes verbatim: active docs mirror the primary tree, and historical /
-> superseded material is under [`ru/archive/`](ru/archive/).
+> **Language:** English is the primary layer. The project was written in Russian originally, and
+> [`ru/`](ru/) keeps those notes verbatim — active docs mirror the primary tree, superseded
+> material sits in [`ru/archive/`](ru/archive/).
 
 ---
 
@@ -127,14 +114,13 @@ The MI 302 board = **three MCUs + three BLDC controllers**:
 
 ---
 
-## ⛔ Main unsolved problem — the motors never spun on our firmware
+## Main unsolved problem — the wheels never spun on our firmware
 
 **Under our own firmware the wheels never physically turned**, even though SPI, PWM and GPIO are
-driven correctly and the **blade is controllable**. Something was **stalling them**, and the
-cause was never reduced to a single proven fact. On the bench the wheel produced **total
-silence** (3-phase BLDC, no movement at all), which points at the drive controller **not being
-powered / not being armed** rather than at the SPI/PWM/GPIO layer (all of which match the
-factory firmware).
+driven correctly and the **blade is controllable**. On the bench the wheel gave **total silence**
+— no movement, no twitch — which points at the wheel-channel driver not being powered or not
+being armed, rather than at the SPI/PWM/GPIO layer (all of which match the factory firmware).
+The cause was never narrowed to one proven fact before the board died.
 
 Open hypotheses and the plan to close them —
 [`reverse-v2/reports/WHEELS-ROOT-CAUSE-AUDIT-2026-07-10.md`](reverse-v2/reports/WHEELS-ROOT-CAUSE-AUDIT-2026-07-10.md):
@@ -176,8 +162,8 @@ ru/                    Russian originals (verbatim); ru/archive/ = historical / 
 
 ## Historical: the "ESP32 brain-transplant" approach
 
-The project originally ran as an ESP32-S3 overlay on top of the stock board (Ardumower port,
-matched-filter wire reception). That approach was **abandoned** in favour of directly controlling
-the stock GD32 with our own firmware. The planning docs and the old ESP32 brain firmware are kept
-under [`ru/archive/old-docs/planning-esp32/`](ru/archive/old-docs/planning-esp32/) and
+Before the GD32 route, the project ran as an ESP32-S3 overlay on top of the stock board
+(Ardumower port, matched-filter wire reception). It was dropped in favour of controlling the
+stock GD32 directly. Planning docs and the old ESP32 brain firmware are kept under
+[`ru/archive/old-docs/planning-esp32/`](ru/archive/old-docs/planning-esp32/) and
 [`ru/archive/`](ru/archive/) (see `ru/archive/README.md`).
