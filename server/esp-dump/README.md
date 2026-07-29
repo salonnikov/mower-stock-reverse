@@ -1,5 +1,9 @@
 # Automatic dump of the mower's ESP32 firmware
 
+> **This was never carried through.** The stock display-ESP32 firmware was not dumped, and there
+> is no image of it anywhere in this repository. What follows is the intended procedure, not a
+> report of a completed one.
+
 Through the `mower-link` bridge (BRIDGE mode) over Wi-Fi. No USB, no manual esptool commands.
 `read_flash` — READ ONLY, does not break the mower.
 
