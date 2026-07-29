@@ -4,7 +4,7 @@
 # This file is kept ONLY as a quick telemetry stand (read-only) while the
 # C++ firmware is being written: to view the battery/currents/sensors in HA without connecting to motors.
 #
-# ESP32 telemetry stand for VILLARTEC MI 302 — ESPHome (read-only)
+# ESP32 telemetry stand for the SNK mainboard — ESPHome (read-only)
 # ATTENTION: GPIO numbers are PLACEHOLDERS. Fill in after phase 0 per signal-map.md.
 # Flash: esphome run mower.yaml  (in a container!)
 #
@@ -22,7 +22,7 @@ substitutions:
 
 esphome:
   name: ${device_name}
-  comment: "Smart brains for VILLARTEC MI 302"
+  comment: "Smart brains for the SNK mainboard"
 
 esp32:
   board: esp32dev

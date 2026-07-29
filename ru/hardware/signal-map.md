@@ -1,4 +1,4 @@
-# Карта сигналов платы VILLARTEC MI 302 (ЖИВОЙ документ)
+# Карта сигналов платы SNK_MAINBOARD_CP_V11 (ЖИВОЙ документ)
 
 Это наша де-факто «схема». Заполняется по ходу фазы 0
 (см. [../docs/00-reverse-engineering.md](../docs/00-reverse-engineering.md)).

@@ -1,4 +1,4 @@
-# MOWER — reverse engineering of the SNK_MAINBOARD_CP_V11 robot-mower control board (sold as VILLARTEC MI 302)
+# MOWER — reverse engineering of the SNK_MAINBOARD_CP_V11 robot-mower control board
 
 A from-scratch teardown of the **stock control board** of a robot lawn mower: both factory
 firmwares decompiled, a full architecture / peripheral / subsystem map, a working SWD
@@ -6,26 +6,12 @@ flash / dump / restore toolchain, and a custom chip1 firmware that runs on the r
 There is no OEM schematic — everything here was recovered from the two factory GD32 firmwares
 and from the board itself.
 
-## The board: SNK, not VILLARTEC
-
-The mower is sold as VILLARTEC MI 302, but nothing inside carries that brand. The boards are an
-OEM platform marked **SNK** — stamped on the hardware and baked into the factory firmware:
-
-| Where | What it says |
-|---|---|
-| Mainboard silkscreen | **`SNK_MAINBOARD_CP_V11`**, part number **`80102372-01`** |
-| Display-board silkscreen | **`SNK_DISPLAY_CP_V11`**, part number **`80102373-01`** |
-| Factory source file names (from `__FILE__` strings in both dumps) | `a4963_snk_v2.c`, `movebase_snk_v10.c`, `driver_left/right/blade_motor_snk_v2.c`, `driver_battery_snk_v1/v2.c`, `driver_mems_snk_v13.c`, `driver_mboard_port_snk_v2.c`, `send_string_dpport_snk_v2` |
-| USB firmware-update path (chip1) | expects images named `SNK_MB.bin`, `SNK_BB.bin`, `SNK_DB.bin`, `SNK_LB.bin`, `SNK_MBTL.bin`, `SNK_DBS/DBL/DBH.bin` |
-
-`SNK` most likely stands for **Sunseeker** (Sunseeker Robotics) — reading the initials, not
-proven. The board, the firmware and the whole software stack are the OEM's; VILLARTEC MI 302 is
-a rebrand of that platform.
-
-So everything here applies to any mower built on the `SNK_*_CP_V11` boards, whatever badge is on
-the case — same GD32 main MCU + GD32 boundary-sensor MCU + ESP32 display + Fortior FU6832N BLDC
-drivers. If the mainboard silkscreen reads `SNK_MAINBOARD_CP_V11`, this repository describes that
-hardware.
+The boards are marked **SNK**: mainboard **`SNK_MAINBOARD_CP_V11`** (PN `80102372-01`), display
+board **`SNK_DISPLAY_CP_V11`** (PN `80102373-01`); the same mark runs through the factory
+firmware (`a4963_snk_v2.c`, `movebase_snk_v10.c`, update images `SNK_MB.bin` / `SNK_BB.bin`).
+SNK is most likely Sunseeker. Whatever brand is on the case, if the mainboard silkscreen reads
+`SNK_MAINBOARD_CP_V11` this repository describes it. The unit worked on here was sold as
+VILLARTEC MI 302.
 
 **Unfinished.** The reverse engineering is verified on hardware, but the wheels never spun under
 our own firmware — see [Main unsolved problem](#main-unsolved-problem--the-wheels-never-spun-on-our-firmware).

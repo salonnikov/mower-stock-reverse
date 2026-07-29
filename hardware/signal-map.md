@@ -1,4 +1,4 @@
-# Signal map of the VILLARTEC MI 302 board (LIVING document)
+# Signal map of the SNK_MAINBOARD_CP_V11 board (LIVING document)
 
 This is our de-facto "schematic". Filled in during phase 0
 (see [../docs/00-reverse-engineering.md](../docs/00-reverse-engineering.md)).
