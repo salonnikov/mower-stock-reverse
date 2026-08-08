@@ -112,8 +112,18 @@ The MI 302 board = **three MCUs + three BLDC controllers**:
 - **Factory restore verified** — chip1 was rolled back to a bit-exact factory image
   (SP `0x20017ff8`, CRC `0x0f69a878`); tooling in [`tools/rpi-swd/restore-2026-07-14/`](tools/rpi-swd/restore-2026-07-14/).
 - **Dumps, firmware images and flashers** — [`dist/`](dist/), see [`dist/FLASHERS.md`](dist/FLASHERS.md)
-  (includes the factory chip1 dump `gd32-mainboard-dump-v1.bin`, the chip2 dump, and the full
-  `factory-full.asm` disassembly).
+  (includes the factory chip1 dump `gd32-mainboard-dump-v1.bin`, the chip2 dump, the display-board
+  dump `esp32-display-dump-v1.bin`, and the full `factory-full.asm` disassembly).
+
+### 8. Display board ESP32 dumped (2026-08-09)
+- **All 4 MB of the display ESP32's flash are dumped and unencrypted** — over UART through the
+  board's own J1 header, no soldering: `P`→`GND` enters the ROM bootloader, `esptool read_flash`
+  does the rest. Efuses: `FLASH_CRYPT_CNT = 0`, `ABS_DONE_0/1 = False`.
+- Inside: project `Display_esp32` **v3.02.05**, ESP-IDF v4.4.3, built Mar 26 2024; live image in
+  `ota_0` @0x10000, `ota_1` empty.
+- The strings show this node is the vendor's **cloud client**, not just an LED driver — MQTT to
+  `server.sk-robot.com`, NVS keys `robot_ssid` / `robot_password` / `robot_sn`, `Mower_` AP prefix.
+- Dump and analysis: [`reverse-v2/esp32-display/`](reverse-v2/esp32-display/).
 
 ---
 
@@ -145,6 +155,7 @@ to settle this at once — [`reverse-v2/reports/SWD-CAPTURE-PACKAGE-2026-07-13.m
 reverse-v2/            ★ CORE: clean re-teardown of both firmwares
   ARCHITECTURE.md      unified robot map (chip1 / chip2 / display / drive)
   chip1/ chip2/        canonical decompile (decompiled_all.c, symbols, strings)
+  esp32-display/       display-board ESP32: flash dump, partitions, strings
   factory-map/         full factory-firmware walkthrough by function (00-INDEX)
   reference/           references (bring-up RAM, drivers, registers, mowing algorithm)
   reports/             current reports and plans — see reports/README.md

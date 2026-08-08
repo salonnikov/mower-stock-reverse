@@ -16,5 +16,16 @@
 - Purpose: FULL flash dump of the mainboard (original firmware), taken over SWD from RPi2.
 - Chip: GD32F305 (Cortex-M4), 1 MB flash @0x08000000. RDP was not set.
 - Size: 1048576 bytes. md5: 316927a42857b6f28bd7a0ad2d070de5. Date: 2026-06-29.
-- Do NOT commit/push (proprietary firmware) — in .gitignore.
 - Taken: openocd on raspberrypi (192.168.10.81) via selectelvm/WG, gd32-dump.cfg.
+
+## esp32-display-dump-v1.bin
+- Purpose: FULL flash dump of the **display board** ESP32 (original firmware), taken over UART.
+- Board: SNK_DISPLAY_CP_V11 (PN 80102373-01). Chip: ESP32-D0WD-V3 rev 3.1, MAC `d8:13:2a:22:fe:10`.
+- Size: 4194304 bytes (4 MB). md5: `a9d7f453a85f3ba805e0d8d88af1b1f7`. Date: 2026-08-09.
+- Not encrypted: `FLASH_CRYPT_CNT = 0`, `ABS_DONE_0/1 = False`, JTAG left enabled.
+- Firmware inside: project `Display_esp32` v3.02.05, ESP-IDF v4.4.3, built Mar 26 2024.
+- Taken: USB-TTL (3.3 V) on the board's J1 header, `P`→`GND` for ROM download mode,
+  `esptool.py v4.12.0 read_flash 0 0x400000`. No soldering. See `reverse-v2/esp32-display/`.
+
+> Note: unlike a build repo, the factory dumps above are **tracked on purpose** — they are the
+> primary reverse-engineering source material. See the note at the bottom of `.gitignore`.

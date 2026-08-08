@@ -1,8 +1,15 @@
 # Automatic dump of the mower's ESP32 firmware
 
-> **This was never carried through.** The stock display-ESP32 firmware was not dumped, and there
-> is no image of it anywhere in this repository. What follows is the intended procedure, not a
-> report of a completed one.
+> **Superseded — the dump exists, but it was taken another way (2026-08-09).** The display board
+> was out of the mower by then, so the Wi-Fi bridge described here was unnecessary: a USB-TTL
+> adapter was wired straight to the board's J1 header, `P`→`GND` put the ESP32 into the ROM
+> bootloader, and `esptool.py read_flash` pulled all 4 MB. The image is **not encrypted**.
+>
+> Result: [`dist/esp32-display-dump-v1.bin`](../../dist/esp32-display-dump-v1.bin);
+> analysis in [`reverse-v2/esp32-display/`](../../reverse-v2/esp32-display/).
+>
+> The procedure below stays on record for the case where the ESP32 has to be read **in place,
+> inside an assembled mower** — it needs no disassembly and no physical access to J1.
 
 Through the `mower-link` bridge (BRIDGE mode) over Wi-Fi. No USB, no manual esptool commands.
 `read_flash` — READ ONLY, does not break the mower.
@@ -24,3 +31,6 @@ Through the `mower-link` bridge (BRIDGE mode) over Wi-Fi. No USB, no manual espt
 ## If "possibly encrypted"
 Then the dump is useless — we switch to **protocol sniffing** (mower-link SNIFF + the logger
 in `server/uart-logger`), decoding the commands/telemetry from the live stream.
+
+Not the case here: the efuses read back `FLASH_CRYPT_CNT = 0` and `ABS_DONE_0/1 = False`, so
+flash encryption and secure boot are both off and the 2026-08-09 image is plaintext.
