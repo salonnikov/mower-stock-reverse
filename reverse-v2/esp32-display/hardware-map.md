@@ -1,85 +1,100 @@
 # What the stock firmware tells us about the display board's hardware
 
-Extracted from `decompiled_all.c` (see [README](README.md)). The point is not the vendor's logic —
-it is the wiring and the peripheral inventory, so that our own firmware can drive this board.
+Extracted from the decompile (see [README](README.md)). The point is not the vendor's logic — it is
+the wiring and the peripheral inventory, so our own firmware can drive this board.
 
-## Established
+## The vendor's own software map
 
-### The J2 link to the mainboard — UART1, 230400 8N1, TX = GPIO17, RX = GPIO16
+The firmware keeps `__FILE__` paths, which name the modules it is built from:
 
-`FUN_400e61e4` sets the link up end to end:
+| Source file | What it is |
+|---|---|
+| `../main/src/app/rw_display.c` | display application |
+| `../main/src/driver/driver_mboard_port.c` | the link to the mainboard |
+| `../main/src/driver/driver_rf.c` | sub-GHz radio driver |
+| `../components/spi_tube_driver/src/spi_tube_drive.c` | **the segment display, driven over SPI** |
+| `../components/cmt2300a/src/cmt2300a_hal.c` | **CMT2300A** sub-GHz transceiver HAL |
+| `../components/Iot_Xulian/src/LSBle.c` | BLE stack glue |
+| `../components/wifi_driver/src/wifi_driver_{api,port}.c` | Wi-Fi |
+
+Two of these change the picture of what this board is.
+
+## The board carries a sub-GHz radio — CMT2300A
+
+`ft-rf-1` in the factory-test set is neither Wi-Fi nor BLE. It is a **HopeRF CMT2300A** transceiver,
+and the firmware switches it between bands: `RF mode:NO`, `RF mode:868`, `RF mode:915`.
+
+What it is for shows up in the log strings: `RF open Wireless Charge` / `RF close Wireless Charge`,
+and in NVS the driver keeps a pair of pairing seeds — `STA_seed` and `MOW_seed`
+(`nvs_set_u16(seed_nvs_handler, "STA_seed", *s_seed)`). So the display board is the node that talks
+to the charging station over the air and holds the mower↔station pairing.
+
+## The segment display is on SPI, not on bit-banged pins
+
+The component is literally called `spi_tube_driver` ("tube" = the segment digits). That matches the
+three SOIC-16 packages on the board: shift registers fed from the SPI bus. It also explains two
+things that had been puzzling: there is **no 7-segment font table anywhere in the image** (checked
+for every bit ordering, for 8/16/32-bit entries, and allowing constant extra bits), and there is
+**no direct write to the GPIO output registers** — the base `0x3ff44000` never appears in the code.
+
+The radio sits on the same SPI bus: `cmt2300a_hal.c` sends bytes with
+`spi_device_polling_transmit(handle, &trans)` at 8 bits per transfer.
+
+## Pins established from the code
+
+These come from explicit `gpio_set_level(pin, level)` and `gpio_set_direction(pin, mode)` calls with
+constant arguments (`FUN_4012cf40` and `FUN_4012d0e8` respectively, both identified from their own
+`__FUNCTION__` strings):
+
+| Pin | Direction | Established use |
+|---|---|---|
+| **GPIO17** | out | UART1 TX — the J2 link to the mainboard |
+| **GPIO16** | in | UART1 RX — the J2 link |
+| **GPIO23** | out | CMT2300A chip select, driven high at init |
+| **GPIO4** | out | CMT2300A second chip select (the part has CSB and FCSB) |
+| **GPIO35** | in | input from the RF section — input-only pad on the ESP32, consistent with the radio's interrupt line |
+| **GPIO18** + **GPIO5** | out | driven as a pair from one function inside the RF driver's neighbourhood |
+| **GPIO27** | out | driven from a boolean; called from four places in the settings code |
+| **GPIO2** | out | driven low by a pair of functions near the RF HAL |
+
+The J2 link is fully characterised:
 
 ```c
-uart_param_config (1, &cfg);              // cfg.baud_rate = 0x38400 = 230400, 8 data bits
-uart_set_pin      (1, 0x11, 0x10, -1);    // TX = GPIO17, RX = GPIO16, no RTS/CTS
-uart_driver_install(1, 0x400, 0x400, 8, &queue, 0);   // rx 1024, tx 1024, event queue 8
-xTaskCreate(...);                         // the link task, priority 0x18
+uart_param_config (1, &cfg);              // baud 0x38400 = 230400, 8 data bits
+uart_set_pin      (1, 0x11, 0x10, -1);    // TX GPIO17, RX GPIO16, no flow control
+uart_driver_install(1, 0x400, 0x400, 8, &queue, 0);
 ```
 
-Two things follow. The link is **UART1**, not the UART0 that J1 exposes — J1 is the console and the
-programming header, J2 is the machine link. And **230400** independently confirms the figure
-reached from the mainboard side, where the display link is named `DB` and clocked at 230400.
+**230400 independently confirms the figure reached from the mainboard side**, where the same link is
+named `DB`. J1, by contrast, is UART0 on the default pads — the console and the programming header.
 
-### J1 — UART0 on the default pins
+## Tasks
 
-UART0 keeps the default pads (GPIO1 TX / GPIO3 RX), which is what `T` / `R` on J1 are. `P` on J1 is
-IO0, confirmed by taking the dump through it.
+`xTaskCreate` is called eight times; the task names in the image are `main_task`, `wifi_task`,
+`mqtt_task`, `Factory_task`, `bt thread`, `RF thread`, `rain detect thread`, `log thread`,
+`update thread`, `ipc_task`, `tcpip_thread`.
 
-### Peripheral inventory, from the factory-test command set
+There is **no display task** — the segments are not serviced by a thread of their own.
 
-The firmware carries a factory mode whose commands enumerate what the vendor considers testable
-hardware on this board:
+## Rain sensor
 
-| Command | Peripheral |
-|---|---|
-| `ft-key-1` | the four front buttons |
-| `ft-lcd-` | the 4-digit segment display |
-| `ft-rain-1` | rain sensor |
-| `ft-beep-` | buzzer |
-| `ft-ble-1` | Bluetooth LE |
-| `ft-wifi-1` | Wi-Fi |
-| `ft-rf-1` | a separate RF path — **not** Wi-Fi/BLE, worth identifying |
-| `ft-uart-1` | the J2 link |
-| `ft-into`, `Factory` | enter factory mode |
+Analogue, not a dry contact: `rain adc value:%d`, `rain sensor : %d`, its own `rain detect thread`,
+an error path `initialze robot rain failed`. Debounced in software — `rain_en`, `rain_delay`,
+`rain_delay_set`, `rain_delay_left`, `rain_state`, `rain_status` — with robot states `rain dock`,
+`rain wait`, `rain delay`.
 
-`ft-rf-` is the surprise: it implies a radio path distinct from the ESP32's own Wi-Fi and BLE.
+## Factory test mode
 
-### Rain sensor — analogue, with its own task
+The firmware answers a set of commands that exercise each peripheral in turn: `ft-key-1`, `ft-lcd-`,
+`ft-rain-1`, `ft-beep-`, `ft-ble-1`, `ft-wifi-1`, `ft-rf-1`, `ft-uart-1`, entered with `ft-into` /
+`Factory`. Useful if the pins ever need confirming on live hardware without a scope: run one command
+at a time and watch what the board does.
 
-Log lines `rain adc value:%d` and `rain sensor : %d`, a thread named `rain detect thread`, an error
-path `initialze robot rain failed`. It is a measured value, not a dry contact, and it is debounced
-in software: settings `rain_en`, `rain_delay`, `rain_delay_set`, `rain_delay_left`, `rain_state`,
-`rain_status`, and robot states `rain dock`, `rain wait`, `rain delay`. There is a menu entry for
-it (`add rain menu`).
+## Still open
 
-### Lighting and zones
-
-`led_en`, `led_mode`, `led_night`, `led_start`, `led_end` — scheduled lighting, with a night window.
-`zone_en`, `zone_ex` and a multizone setting sit next to them in the same NVS handler
-(`FUN_400d9ddc` / `FUN_400db588`).
-
-### Settings held in NVS
-
-`snk_mqtt`, `robot_ssid`, `robot_password`, `robot_name`, `robot_sn`, `Robot_env`, plus the rain,
-led and zone keys above. Cloud side: MQTT to `server.sk-robot.com` (and `test1..3`,
-`mergemqtt-wired`), pairing AP prefix `Mower_`.
-
-## Not established — and the cheap way to get it
-
-**The GPIO numbers for the display, the buttons, the buzzer and the rain input are still unknown.**
-Tracing them out of the decompile stalls for a specific reason: the application calls the IDF
-drivers **indirectly**, through function pointers loaded from literal pools
-(`(*(code *)PTR_FUN_400d0504)(...)`), so there are no direct call references to follow, and the pins
-are not passed as literal constants at the few call sites that are visible. `uart_set_pin` was the
-exception, which is why the link is fully known.
-
-Two ways forward that do not need more static analysis:
-
-1. **Drive the factory test and watch the pins.** The stock firmware exercises each peripheral on
-   command (`ft-lcd-`, `ft-key-1`, `ft-beep-`, `ft-rain-1`). With the board powered and a scope or
-   logic analyser on the module pads, each command shows exactly which pins move.
-2. **Attach JTAG.** `JTAG_DISABLE` is not blown, so the GPIO matrix and IO_MUX registers can be read
-   live while the stock firmware runs — that is the pin map, read straight out of the silicon
-   rather than inferred.
-
-Either is faster than continuing to chase indirect calls through the pseudo-C.
+- **Which SPI bus and which SCLK/MOSI pins the tube driver and the radio share.** The call to
+  `spi_bus_initialize` with the bus config has not been pinned down — the application reaches the
+  IDF drivers through function pointers held in literal pools, so there are no call references to
+  follow. The pins above were recovered because those particular calls pass constants.
+- The pins for the buttons and the buzzer.
+- Module attribution for GPIO18/GPIO5, GPIO27 and GPIO2 is by neighbourhood, not proven.
