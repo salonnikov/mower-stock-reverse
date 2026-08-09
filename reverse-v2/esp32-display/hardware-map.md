@@ -144,6 +144,12 @@ bit 8 = colon                    (set/cleared on its own by FUN_400e007c, mask 0
 Blanking a position ANDs the word with `0xFF80`, i.e. it wipes the seven segments and the dot while
 leaving the higher bits alone — more evidence that the bits above 8 are separate indicators.
 
+One thing to be careful about: the renderer only ever touches bits 0..8, and the digit is chosen by
+**which** framebuffer word is being sent, not by anything the renderer writes. So the digit-select
+bits must already sit in the upper byte of each word, put there when the framebuffer is set up. What
+exactly those bits are has not been read out — reading the four words at `0x3ffc5ac0` on a running
+board would settle it in one look.
+
 So the whole panel is now specified well enough to write from scratch:
 
 ```
