@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1000" width="1440" height="1000" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1440" height="1000" fill="#ffffff"/>
+
+  <text x="40" y="52" font-size="26" font-weight="bold" fill="#111">ESP32-WROOM-32UE на плате SNK_DISPLAY_CP_V11</text>
+  <text x="40" y="82" font-size="17" fill="#444">Вид сверху, ориентация ровно как на hardware/photos/display-board-back.jpg (плата модулем к тебе)</text>
+  <text x="40" y="106" font-size="17" fill="#444">Опорная точка — белый герметик с коаксиалом справа: это конец с разъёмом U.FL, падов там нет.</text>
+
+  <!-- module body -->
+  <rect x="300" y="240" width="720" height="600" rx="6" fill="#2b3a55" stroke="#16202f" stroke-width="3"/>
+  <rect x="330" y="270" width="660" height="540" rx="4" fill="#3c4f6d" stroke="#26374f" stroke-width="2"/>
+  <text x="660" y="530" font-size="22" fill="#c8d6ea" text-anchor="middle" letter-spacing="2">ESP32-WROOM-32UE</text>
+  <text x="660" y="562" font-size="15" fill="#8ea5c4" text-anchor="middle">экран / шильдик ESPRESSIF</text>
+
+  <!-- antenna end -->
+  <ellipse cx="1035" cy="700" rx="42" ry="58" fill="#f2f2f0" stroke="#cccccc" stroke-width="2"/>
+  <path d="M1050 720 C 1090 760, 1110 790, 1140 800" fill="none" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+  <text x="1096" y="700" font-size="15" fill="#111">U.FL + коаксиал</text>
+  <text x="1096" y="722" font-size="15" fill="#111">под белым герметиком.</text>
+  <text x="1096" y="744" font-size="15" fill="#111">Падов на этом торце нет —</text>
+  <text x="1096" y="766" font-size="15" fill="#111">это «антенный» конец.</text>
+
+  <!-- direction arrows -->
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#0b7285"/>
+    </marker>
+    <marker id="arrRed" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto">
+      <path d="M0,0 L11,4.5 L0,9 z" fill="#c92a2a"/>
+    </marker>
+  </defs>
+
+  <line x1="980" y1="196" x2="345" y2="196" stroke="#0b7285" stroke-width="3" marker-end="url(#arr)"/>
+  <text x="662" y="186" font-size="16" fill="#0b7285" text-anchor="middle" font-weight="bold">верхний ряд: 1 → 15, считаем СПРАВА НАЛЕВО (от антенного конца)</text>
+
+  <line x1="196" y1="404" x2="196" y2="676" stroke="#0b7285" stroke-width="3" marker-end="url(#arr)"/>
+  <text x="188" y="392" font-size="16" fill="#0b7285" text-anchor="end" font-weight="bold">левый торец: 16 → 23</text>
+
+  <line x1="340" y1="944" x2="980" y2="944" stroke="#0b7285" stroke-width="3" marker-end="url(#arr)"/>
+  <text x="662" y="972" font-size="16" fill="#0b7285" text-anchor="middle" font-weight="bold">нижний ряд: 24 → 38, считаем СЛЕВА НАПРАВО</text>
+
+  <!-- ===== TOP ROW pads 1..15 (right to left) ===== -->
+  <g fill="#c9a227">
+    <rect x="983" y="228" width="26" height="24"/><rect x="935" y="228" width="26" height="24"/>
+    <rect x="839" y="228" width="26" height="24"/><rect x="791" y="228" width="26" height="24"/>
+    <rect x="743" y="228" width="26" height="24"/><rect x="695" y="228" width="26" height="24"/>
+    <rect x="647" y="228" width="26" height="24"/><rect x="599" y="228" width="26" height="24"/>
+    <rect x="551" y="228" width="26" height="24"/><rect x="503" y="228" width="26" height="24"/>
+    <rect x="455" y="228" width="26" height="24"/><rect x="407" y="228" width="26" height="24"/>
+    <rect x="359" y="228" width="26" height="24"/><rect x="311" y="228" width="26" height="24"/>
+  </g>
+  <rect x="887" y="224" width="26" height="32" fill="#e03131" stroke="#7d1616" stroke-width="2"/>
+
+  <g font-size="13" fill="#111" text-anchor="middle">
+    <text x="996" y="218">1</text><text x="948" y="218">2</text>
+    <text x="900" y="218" font-weight="bold" fill="#c92a2a">3</text>
+    <text x="852" y="218">4</text><text x="804" y="218">5</text><text x="756" y="218">6</text>
+    <text x="708" y="218">7</text><text x="660" y="218">8</text><text x="612" y="218">9</text>
+    <text x="564" y="218">10</text><text x="516" y="218">11</text><text x="468" y="218">12</text>
+    <text x="420" y="218">13</text><text x="372" y="218">14</text><text x="324" y="218">15</text>
+  </g>
+  <g font-size="13" fill="#333" text-anchor="end">
+    <text transform="rotate(-90 996 206)" x="996" y="206">GND</text>
+    <text transform="rotate(-90 948 206)" x="948" y="206">3V3</text>
+    <text transform="rotate(-90 900 206)" x="900" y="206" font-weight="bold" fill="#c92a2a">EN</text>
+    <text transform="rotate(-90 852 206)" x="852" y="206">IO36</text>
+    <text transform="rotate(-90 804 206)" x="804" y="206">IO39</text>
+    <text transform="rotate(-90 756 206)" x="756" y="206">IO34</text>
+    <text transform="rotate(-90 708 206)" x="708" y="206">IO35</text>
+    <text transform="rotate(-90 660 206)" x="660" y="206">IO32</text>
+    <text transform="rotate(-90 612 206)" x="612" y="206">IO33</text>
+    <text transform="rotate(-90 564 206)" x="564" y="206">IO25</text>
+    <text transform="rotate(-90 516 206)" x="516" y="206">IO26</text>
+    <text transform="rotate(-90 468 206)" x="468" y="206">IO27</text>
+    <text transform="rotate(-90 420 206)" x="420" y="206">IO14</text>
+    <text transform="rotate(-90 372 206)" x="372" y="206">IO12</text>
+    <text transform="rotate(-90 324 206)" x="324" y="206">GND</text>
+  </g>
+
+  <!-- ===== LEFT SHORT SIDE pads 16..23 ===== -->
+  <g fill="#c9a227">
+    <rect x="288" y="381" width="24" height="22"/><rect x="288" y="423" width="24" height="22"/>
+    <rect x="288" y="465" width="24" height="22"/><rect x="288" y="507" width="24" height="22"/>
+    <rect x="288" y="550" width="24" height="22"/><rect x="288" y="592" width="24" height="22"/>
+    <rect x="288" y="634" width="24" height="22"/><rect x="288" y="676" width="24" height="22"/>
+  </g>
+  <g font-size="13" fill="#111" text-anchor="end">
+    <text x="280" y="397">16</text><text x="280" y="439">17</text><text x="280" y="481">18</text>
+    <text x="280" y="523">19</text><text x="280" y="566">20</text><text x="280" y="608">21</text>
+    <text x="280" y="650">22</text><text x="280" y="692">23</text>
+  </g>
+  <g font-size="13" fill="#333" text-anchor="end">
+    <text x="248" y="397">IO13</text><text x="248" y="439">SD2</text><text x="248" y="481">SD3</text>
+    <text x="248" y="523">CMD</text><text x="248" y="566">CLK</text><text x="248" y="608">SD0</text>
+    <text x="248" y="650">SD1</text><text x="248" y="692">IO15</text>
+  </g>
+  <text x="248" y="736" font-size="13" fill="#888" text-anchor="end">(пады флешки — не трогать)</text>
+
+  <!-- ===== BOTTOM ROW pads 24..38 (left to right) ===== -->
+  <g fill="#c9a227">
+    <rect x="311" y="828" width="26" height="24"/>
+    <rect x="407" y="828" width="26" height="24"/><rect x="455" y="828" width="26" height="24"/>
+    <rect x="503" y="828" width="26" height="24"/><rect x="551" y="828" width="26" height="24"/>
+    <rect x="599" y="828" width="26" height="24"/><rect x="647" y="828" width="26" height="24"/>
+    <rect x="695" y="828" width="26" height="24"/><rect x="743" y="828" width="26" height="24"/>
+    <rect x="791" y="828" width="26" height="24"/><rect x="839" y="828" width="26" height="24"/>
+    <rect x="887" y="828" width="26" height="24"/><rect x="935" y="828" width="26" height="24"/>
+    <rect x="983" y="828" width="26" height="24"/>
+  </g>
+  <rect x="359" y="824" width="26" height="32" fill="#e03131" stroke="#7d1616" stroke-width="2"/>
+
+  <g font-size="13" fill="#111" text-anchor="middle">
+    <text x="324" y="872">24</text>
+    <text x="372" y="872" font-weight="bold" fill="#c92a2a">25</text>
+    <text x="420" y="872">26</text><text x="468" y="872">27</text><text x="516" y="872">28</text>
+    <text x="564" y="872">29</text><text x="612" y="872">30</text><text x="660" y="872">31</text>
+    <text x="708" y="872">32</text><text x="756" y="872">33</text><text x="804" y="872">34</text>
+    <text x="852" y="872">35</text><text x="900" y="872">36</text><text x="948" y="872">37</text>
+    <text x="996" y="872">38</text>
+  </g>
+  <g font-size="13" fill="#333" text-anchor="start">
+    <text transform="rotate(90 324 884)" x="324" y="884">IO2</text>
+    <text transform="rotate(90 372 884)" x="372" y="884" font-weight="bold" fill="#c92a2a">IO0</text>
+    <text transform="rotate(90 420 884)" x="420" y="884">IO4</text>
+    <text transform="rotate(90 468 884)" x="468" y="884">IO16</text>
+    <text transform="rotate(90 516 884)" x="516" y="884">IO17</text>
+    <text transform="rotate(90 564 884)" x="564" y="884">IO5</text>
+    <text transform="rotate(90 612 884)" x="612" y="884">IO18</text>
+    <text transform="rotate(90 660 884)" x="660" y="884">IO19</text>
+    <text transform="rotate(90 708 884)" x="708" y="884">NC</text>
+    <text transform="rotate(90 756 884)" x="756" y="884">IO21</text>
+    <text transform="rotate(90 804 884)" x="804" y="884" fill="#1864ab">RXD0</text>
+    <text transform="rotate(90 852 884)" x="852" y="884" fill="#1864ab">TXD0</text>
+    <text transform="rotate(90 900 884)" x="900" y="884">IO22</text>
+    <text transform="rotate(90 948 884)" x="948" y="884">IO23</text>
+    <text transform="rotate(90 996 884)" x="996" y="884">GND</text>
+  </g>
+
+  <!-- callout arrows inside the module -->
+  <line x1="800" y1="380" x2="893" y2="272" stroke="#c92a2a" stroke-width="4" marker-end="url(#arrRed)"/>
+  <text x="792" y="376" font-size="19" fill="#ff8787" text-anchor="end" font-weight="bold">EN — пад 3</text>
+  <text x="792" y="400" font-size="15" fill="#e9b3b3" text-anchor="end">верхний ряд, ТРЕТИЙ от правого края</text>
+
+  <line x1="470" y1="700" x2="372" y2="808" stroke="#c92a2a" stroke-width="4" marker-end="url(#arrRed)"/>
+  <text x="482" y="700" font-size="19" fill="#ff8787" font-weight="bold">IO0 — пад 25</text>
+  <text x="482" y="724" font-size="15" fill="#e9b3b3">нижний ряд, ВТОРОЙ от левого края</text>
+
+  <!-- checklist -->
+  <rect x="1090" y="150" width="320" height="380" rx="8" fill="#f6f8fa" stroke="#c8d0d8" stroke-width="2"/>
+  <text x="1110" y="182" font-size="17" font-weight="bold" fill="#111">Проверка тестером до пайки</text>
+  <text x="1110" y="212" font-size="14" fill="#333">Прозвонка (значок зуммера), пищит —</text>
+  <text x="1110" y="232" font-size="14" fill="#333">значит соединено:</text>
+
+  <text x="1110" y="266" font-size="14" fill="#111">• пад 2 ↔ J1 «3V3»</text>
+  <text x="1110" y="290" font-size="14" fill="#666">   якорь: рядом с ним 1=GND и 3=EN</text>
+  <text x="1110" y="316" font-size="14" fill="#111">• пад 1 и пад 38 ↔ J1 «GND»</text>
+  <text x="1110" y="340" font-size="14" fill="#666">   это два дальних угла у антенны</text>
+  <text x="1110" y="366" font-size="14" fill="#111">• пад 35 ↔ J1 «T», пад 34 ↔ J1 «R»</text>
+  <text x="1110" y="390" font-size="14" fill="#666">   подтверждает, что гребёнка на UART0</text>
+  <text x="1110" y="416" font-size="14" fill="#111">• пад 25 ↔ J1 «P»</text>
+  <text x="1110" y="440" font-size="14" fill="#666">   пищит → «P» это IO0, паять не надо</text>
+  <text x="1110" y="460" font-size="14" fill="#666">   молчит → «P» это периметр,</text>
+  <text x="1110" y="480" font-size="14" fill="#666">   провод кидаем прямо на пад 25</text>
+
+  <text x="1110" y="512" font-size="14" fill="#c92a2a">К EN (пад 3) паяться придётся в любом</text>
+  <text x="1110" y="530" font-size="14" fill="#c92a2a">случае — наружу он не выведен.</text>
+</svg>

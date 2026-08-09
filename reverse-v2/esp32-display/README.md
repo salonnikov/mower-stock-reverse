@@ -106,3 +106,14 @@ anchors found so far:
   spec does not model. They decompile, but those spots should be read as assembly.
 - **What actually travels over J2 has not been worked out.** `FUN_400e0d64` is the place to start;
   the frame format, and how it lines up with the mainboard's own display link, are still unknown.
+
+## Photographs of the board
+
+- [`hardware/photos/display-board-front.jpg`](../../hardware/photos/display-board-front.jpg) —
+  component side: the 4-digit panel, the four buttons (ON / START / HOME / OK), the J1 programming
+  header, the harness pad row, and the two springs at J3/J4 that are the rain electrodes.
+- [`hardware/photos/display-board-back.jpg`](../../hardware/photos/display-board-back.jpg) —
+  solder side: the ESP32-WROOM-32UE with its U.FL whip glued down, the three SOIC-16 segment
+  drivers, the buck, the buzzer under tape, and the J2 harness connector.
+- [`hardware/esp32-display-module-pads.svg`](../../hardware/esp32-display-module-pads.svg) — pad
+  numbering of the module in the same orientation as the back photo, for locating EN and IO0.
