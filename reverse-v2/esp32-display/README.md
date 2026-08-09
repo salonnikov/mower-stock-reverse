@@ -51,7 +51,43 @@ This is a vendor **SK-Robot** network node, not just an LED-panel driver:
 - AP prefix `Mower_`, password/token checks during pairing
 - log line `robot poweron,esp32 reset: %d,cpu0 reset: %d, cpu1 reset: %d`
 
+## Decompilation
+
+**6192 functions found, 6191 decompiled** (one failure). Ghidra **12.1.2 carries its own Xtensa
+processor module** — contrary to the earlier assumption, no third-party extension is needed.
+
+| File | What it is |
+|---|---|
+| `decompiled_all.c` | pseudo-C for every function (5.1 MB) |
+| `functions_index.csv` | `addr,name,size,decomp_ok` |
+| `symbols.txt` | all symbols, including the ROM map |
+| `strings.txt` | strings with addresses |
+| `memory_map.txt` | the memory layout the analysis ran against |
+
+Reproduce with [`tools/ghidra-esp32/run.sh`](../../tools/ghidra-esp32/run.sh); the layout script is
+[`reverse-v2/ghidra-scripts/Esp32Segments.java`](../ghidra-scripts/Esp32Segments.java).
+
+Two things matter for getting sane output:
+
+- **The image is not flat.** Its six segments load at unrelated addresses, so the raw file is
+  imported as seg3 (IROM) at `0x400d0020` and the other five are mapped in as separate blocks,
+  plus uninitialised regions for ROM, BSS and the peripherals. Loading the file linearly produces
+  garbage.
+- **ROM calls are named** from `esp32.rom.ld` of the *same* ESP-IDF the firmware was built with
+  (v4.4.3): 1591 symbols, so calls land on `rom_phy_disable_agc` and friends rather than bare
+  addresses.
+
+Docker note: the image is built for **linux/amd64 on purpose**. The Ghidra release has native
+decompiler binaries for linux_x86_64 / mac_* / win_x86_64 but none for linux_arm_64, so an arm64
+image comes up with no decompiler at all. On Apple Silicon this needs Rosetta enabled in Docker
+Desktop.
+
 ## Open
 
-- Decompilation: stock Ghidra does not handle Xtensa LX6 — a third-party processor module is needed.
+- **Function names.** The firmware is stripped: 6155 of 6192 functions are `FUN_xxxxxxxx`. The
+  image does carry IDF assert material — source paths such as `/IDF/components/vfs/vfs_uart.c`
+  next to identifiers such as `uart_write` — so a second pass could recover real names for a good
+  part of the IDF-side code.
+- A handful of functions hit `Unable to resolve constructor` warnings — Xtensa opcodes the SLEIGH
+  spec does not model. They decompile, but those spots should be read as assembly.
 - What actually travels over J2 (the link to the mainboard) has not been worked out.

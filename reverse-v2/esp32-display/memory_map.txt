@@ -1,0 +1,10 @@
+3f400020 - 3f42628f  drom0  r=true w=false x=false vol=false
+3ff40000 - 3ff8ffff  periph  r=true w=true x=false vol=false
+3ff90000 - 3ff9ffff  rom_data  r=true w=false x=false vol=false
+3ffbdb60 - 3ffc483b  dram0  r=true w=true x=false vol=false
+3ffc4840 - 3fffffff  dram_bss  r=true w=true x=false vol=false
+40000000 - 4006ffff  rom_code  r=true w=false x=true vol=false
+40080000 - 4008309b  iram0  r=true w=false x=true vol=false
+4008309c - 4009c257  iram1  r=true w=false x=true vol=false
+400d0020 - 401b4267  ram  r=true w=true x=true vol=false
+50000000 - 5000000f  rtc  r=true w=true x=false vol=false
