@@ -68,9 +68,31 @@ So: **GPIO2 is the latch (RCLK/STB) of the shift-register chain**, and each refr
 **16-bit** word over SPI — eight bits of segments and eight of digit select, which is what the
 SOIC-16 packages are there for.
 
-### The bus itself
+### The bus itself — there are two, and only one is the display
 
-`FUN_400e6884` brings the bus up, and the config struct reads out directly:
+This is the trap. `FUN_400e6884` sets up **VSPI (host 2), MOSI GPIO26, SCLK GPIO14** — and that bus
+belongs to the **CMT2300A**, which is not fitted on our board. Wiring a display driver to those pins
+produces exactly nothing, which is how the mistake announces itself.
+
+The display has its own bus, brought up in `FUN_400e6fb0` — a function Ghidra never recognised, so
+it has to be read as assembly (`tube-driver.asm`):
+
+```asm
+gpio_set_direction(0x1a, 2)   ; GPIO26 as output
+gpio_set_direction(0x02, 2)   ; GPIO2  as output
+gpio_set_level(0x1a, 1)       ; GPIO26 HIGH — an enable, held for the duration
+...
+mosi = 0x19 = GPIO25
+sclk = 0x21 = GPIO33
+spi_bus_initialize(1, ...)    ; host 1 = HSPI
+spi_bus_add_device(1, ...)
+```
+
+So the panel is **HSPI: MOSI GPIO25, SCLK GPIO33, latch GPIO2, enable GPIO26 high**. Confirmed on
+the hardware.
+
+For reference, the radio bus config, which is what the earlier version of this file wrongly gave as
+the display:
 
 ```c
 bus.mosi_io_num = 0x1a;      // GPIO26
@@ -195,8 +217,10 @@ constant arguments (`FUN_4012cf40` and `FUN_4012d0e8` respectively, both identif
 | **GPIO17** | out | UART1 TX — the J2 link to the mainboard |
 | **GPIO16** | in | UART1 RX — the J2 link |
 | **GPIO2** | out | **segment-display latch** (RCLK/STB of the shift-register chain) |
-| **GPIO26** | out | **SPI MOSI / data** to the display (VSPI, 400 kHz, half-duplex 3-wire) |
-| **GPIO14** | out | **SPI SCLK** |
+| **GPIO25** | out | **display data** — HSPI MOSI, 400 kHz |
+| **GPIO33** | out | **display clock** — HSPI SCLK |
+| **GPIO26** | out | **display enable**, held high while the panel is in use |
+| **GPIO21 / GPIO22 / GPIO19** | in, pull-up | **the three buttons the panel reads itself** |
 | **GPIO27** | out | **buzzer** — pulsed three times with 500 ms gaps on the fault path, and driven from the key/settings code |
 | **GPIO23** | out | CMT2300A chip select — **not populated on our board** |
 | **GPIO4** | out | CMT2300A second chip select (CSB/FCSB) — not populated |
@@ -224,18 +248,27 @@ named `DB`. J1, by contrast, is UART0 on the default pads — the console and th
 
 There is **no display task** — the segments are not serviced by a thread of their own.
 
-## The buttons are not wired to the ESP32
+## The buttons — the panel reads three of them itself
 
-This one is worth stating flatly, because it decides how much of the panel we can reuse.
+An earlier version of this file claimed the opposite, and it was wrong. The mistake is worth keeping
+on record because it is an easy one to repeat: grepping the decompile for `GPIO_IN_REG`
+(`0x3ff4403c`) finds nothing, and it is tempting to conclude that no input is ever read. But
+`gpio_get_level` takes the peripheral base from a struct rather than a literal, so the constant
+never appears — the read shows up as `*(base + 0x3c) >> pin`.
 
-**The firmware never reads a GPIO input.** `GPIO_IN_REG` (`0x3ff4403c`) does not appear anywhere in
-the image, not once. The only pin ever configured as an input is GPIO35, and that is the radio's
-interrupt line. The display's SPI device is opened half-duplex 3-wire, which would allow reading the
-keys back through the panel driver, but no code does it — the tube handle is write-only.
+Found that way, `FUN_400dafb0` reads **GPIO21, GPIO22 and GPIO19**, packs them into a mask, debounces
+with a counter to seven and beeps on a press. Three call sites, so three buttons; the fourth (`ON`,
+by elimination) goes out on the harness as a power-on request rather than being read here.
 
-So the switches on the board go **out through the harness**, and it is the mainboard that reads them.
-The display learns about a press second hand, over the UART1 link, which is where its `KeyNum = %d`
-comes from.
+What still holds: the display's SPI device is opened half-duplex 3-wire, which would have allowed
+reading the keys back through the panel driver, but no code does it — the tube handle is write-only.
+So the keys are plain GPIO inputs, not scanned through the display chip.
+
+`KeyNum = %d` appears both here and in the state machine that owns the UART1 link, so key events are
+read locally and also reported to the mainboard.
+
+Practical consequence for reuse: **the buttons are ours already.** They need no rewiring — our
+firmware only has to read GPIO21, GPIO22 and GPIO19 with pull-ups.
 
 Read the harness row carefully — `OK · STA · GND · ↓ · ↑ · ON · 5V`. **The two arrows are the UART**,
 data in and data out, the same link that was tapped to sniff the protocol; they are not switches.
