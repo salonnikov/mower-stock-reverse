@@ -117,3 +117,35 @@ anchors found so far:
   drivers, the buck, the buzzer under tape, and the J2 harness connector.
 - [`hardware/esp32-display-module-pads.svg`](../../hardware/esp32-display-module-pads.svg) — pad
   numbering of the module in the same orientation as the back photo, for locating EN and IO0.
+
+## What is stored on the board — NVS, coredump, panic
+
+Read straight out of the dump, no hardware needed:
+
+```
+nvs        0x009000, 16 K   — in use
+coredump   0x2f0000, 64 K   — erased, every byte 0xFF
+panic_out  0x300000,  4 K   — erased
+```
+
+**The board has never crashed.** Both the coredump and the panic partitions are blank, so the `Err`
+this panel shows on the bench is ordinary behaviour with no mainboard answering on UART1 — not a
+fault, and not a symptom of a damaged unit.
+
+NVS holds the machine's whole identity and configuration:
+
+| Namespace / key | Holds |
+|---|---|
+| `robot_name` | the display name — this unit says `MyMower` |
+| `robot_sn` | serial number |
+| `robot_ssid`, `robot_password` | the network the panel was last provisioned onto |
+| `WiFi_cfg` → `wifi_ssid`, `wifi_passwd` | the same pair again, under the Wi-Fi module's own namespace |
+| `snk_mqtt`, `Robot_env`, `iot_mode`, `iot_value` | cloud endpoint and environment selector |
+| `seed_lib` → `MOW_seed`, `STA_seed` | the mower↔station RF pairing seeds — present even though the radio is not fitted |
+| `bt_cfg_key0`, `ap.sndchan` | BLE config, Wi-Fi AP secondary channel |
+| `opmode`, `misc`, `version`, `pdt_ver` | operating mode, product and firmware versions |
+| `phy` → `cal_data`, `cal_mac`, `cal_version` | RF calibration written by the IDF |
+
+The provisioned SSID is a **factory network, not a customer one** — this board left the line
+configured for the production floor and was never joined to a home network. The stored credentials
+are deliberately not reproduced here; they are in the dump for anyone who needs them.
