@@ -233,9 +233,15 @@ the image, not once. The only pin ever configured as an input is GPIO35, and tha
 interrupt line. The display's SPI device is opened half-duplex 3-wire, which would allow reading the
 keys back through the panel driver, but no code does it — the tube handle is write-only.
 
-So the four switches on the board go **out through the harness** — the pads marked `OK`, `STA`, `ON`
-and the two arrows — and it is the mainboard that reads them. The display learns about a press second
-hand, over the UART1 link, which is where its `KeyNum = %d` comes from.
+So the switches on the board go **out through the harness**, and it is the mainboard that reads them.
+The display learns about a press second hand, over the UART1 link, which is where its `KeyNum = %d`
+comes from.
+
+Read the harness row carefully — `OK · STA · GND · ↓ · ↑ · ON · 5V`. **The two arrows are the UART**,
+data in and data out, the same link that was tapped to sniff the protocol; they are not switches.
+That leaves `OK`, `STA` and `ON` as the discrete lines, i.e. three of them against four buttons on
+the panel, so the mapping from buttons to harness lines is not settled — `ON` in particular reads
+more like a power-on request to the mainboard than a plain key.
 
 Consequence for our own firmware: **the buttons will not work as-is.** They are physically on this
 PCB, but their signals leave for the mainboard rather than reaching the ESP32. They have to be
