@@ -68,6 +68,52 @@ So: **GPIO2 is the latch (RCLK/STB) of the shift-register chain**, and each refr
 **16-bit** word over SPI — eight bits of segments and eight of digit select, which is what the
 SOIC-16 packages are there for.
 
+### The bus itself
+
+`FUN_400e6884` brings the bus up, and the config struct reads out directly:
+
+```c
+bus.mosi_io_num = 0x1a;      // GPIO26
+bus.miso_io_num = -1;        // unused
+bus.sclk_io_num = 0x0e;      // GPIO14
+bus.quadwp/quadhd = -1;
+bus.max_transfer_sz = 0x80;  // 128
+spi_bus_initialize(2, &bus, 0);        // host 2 = VSPI
+
+dev.clock_speed_hz = 400000;           // 400 kHz
+dev.spics_io_num   = -1;               // no hardware CS — selects are driven by hand
+dev.flags          = 0x14;             // HALFDUPLEX | 3WIRE
+dev.queue_size     = 1;
+spi_bus_add_device(2, &dev, &handle);
+```
+
+**Half-duplex 3-wire** means the data line is bidirectional — the same wire carries segment data out
+and can be read back, which is how this class of panel driver returns the key state. That, plus the
+`tube scan` string and `KeyNum = %d`, is why no GPIO is ever configured for the buttons: **the keys
+are scanned through the display chip, not wired to the ESP32**.
+
+### The refresh loop
+
+`FUN_400dfff0` is a task that does nothing else:
+
+```c
+do {
+    send16( framebuffer[pos] );   // one 16-bit word
+    pos = (pos + 1) & 0xff;
+    if (pos > 3) pos = 0;         // exactly four digits
+    vTaskDelay(2);                // 2 ms each -> ~125 Hz per digit
+} while (1);
+```
+
+The framebuffer is four 16-bit words at `0x3ffc5ac0`. (An earlier note in this file said there was no
+display task — that was wrong; this task is created through a different call than the eight plain
+`xTaskCreate` sites.)
+
+What is **not** recovered is which bit lights which segment. That mapping is behind the driver
+object's vtable, built at run time rather than stored as a table, and it is the one thing that is
+quicker to get on the bench than out of the image: with our own firmware, walk a single bit through
+the 16-bit word and watch which segment lights.
+
 Above that sits a small class with a vtable. `FUN_400d9944(char *s)` is the public "show" call: it
 takes a **four-character string** and, per position 1..4,
 
@@ -105,6 +151,8 @@ constant arguments (`FUN_4012cf40` and `FUN_4012d0e8` respectively, both identif
 | **GPIO17** | out | UART1 TX — the J2 link to the mainboard |
 | **GPIO16** | in | UART1 RX — the J2 link |
 | **GPIO2** | out | **segment-display latch** (RCLK/STB of the shift-register chain) |
+| **GPIO26** | out | **SPI MOSI / data** to the display (VSPI, 400 kHz, half-duplex 3-wire) |
+| **GPIO14** | out | **SPI SCLK** |
 | **GPIO27** | out | **buzzer** — pulsed three times with 500 ms gaps on the fault path, and driven from the key/settings code |
 | **GPIO23** | out | CMT2300A chip select — **not populated on our board** |
 | **GPIO4** | out | CMT2300A second chip select (CSB/FCSB) — not populated |

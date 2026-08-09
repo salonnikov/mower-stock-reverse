@@ -327,6 +327,7 @@
 3f4022b8	inactive timer: now=%x last_rx_time=%x diff=%x, aid[%d]%02x:%02x:%02x:%02x:%02x:%02x leave
 3f402313	inactive timer, bss(%p) is removed
 3f40233e	cn a f 
+3f402347	cn a f 
 3f40234f	mem fail
 3f402358	mem fail
 3f402361	mcs set is empty!
@@ -471,6 +472,8 @@
 3f4033fb	 register dump:
 3f40340b	 was running in ISR context:  
 3f40342b	PC1    : 0x
+3f40343e	   : 0x
+3f40344d	   : 0x
 3f40345c	   : 0x
 3f403465	C      
 3f403477	0      
@@ -492,6 +495,7 @@
 3f403507	AR     
 3f40350f	EXCCAUSE
 3f403518	EXCVADDR
+3f403522	BEG    
 3f40352a	LEND    
 3f403533	LCOUNT  
 3f4035ad	andled.
@@ -589,7 +593,18 @@
 3f4040a3	memory_layout
 3f4040b1	E (%u) %s: SOC_RESERVE_MEMORY_REGION region range 0x%08x - 0x%08x overlaps with 0x%08x - 0x%08x 
 3f404112	s_prepare_reserved_regions
+3f4043ec	ID2IRAM
+3f4043f5	ID3IRAM
+3f4043fe	ID4IRAM
+3f404407	ID5IRAM
+3f404410	ID6IRAM
+3f404419	ID7IRAM
 3f404421	PID2DRAM
+3f40442b	ID3DRAM
+3f404434	ID4DRAM
+3f40443d	ID5DRAM
+3f404446	ID6DRAM
+3f40444f	ID7DRAM
 3f404457	SPIRAM
 3f4045d0	/IDF/components/esp_hw_support/hw_random.c
 3f4045fb	esp_fill_random
@@ -899,6 +914,8 @@
 3f406a86	bat_id
 3f406a8d	bat_name
 3f406a9c	boot_en
+3f406aab	b_sv
+3f406ab1	b_hv
 3f406adc	region
 3f406ae3	zone_ex
 3f406af2	add_func
@@ -1746,6 +1763,7 @@
 3f40e2fa	67ee4f0
 3f40e302	SCHM PROC %02x %02x, %p 
 3f40e31b	coex_schm.c
+3f40e378	ea.c
 3f40e405	ci_tl.c
 3f40e40d	huart.c
 3f40e415	uart_env_p != NULL
@@ -1778,12 +1796,14 @@
 3f40ead3	(((uint16_t)escocurrentprio << 0) & ~((uint16_t)0x0000001F)) == 0
 3f40eb15	(((uint16_t)bitoff << 0) & ~((uint16_t)0x000003FF)) == 0
 3f40eb4e	(((uint16_t)rxwinsz << 0) & ~((uint16_t)0x00000FFF)) == 0
+3f40eb88	ld_fm.c
 3f40eb90	co_list_is_empty(&ld_fm_env.fifo) || (timestamp != ((struct ld_fm_frm_elt*)ld_fm_env.fifo.last)->timestamp)
 3f40ebfc	(((uint16_t)vxchan << 8) & ~((uint16_t)0x00000300)) == 0
 3f40ec35	(((uint16_t)csptr << 0) & ~((uint16_t)0x00007FFF)) == 0
 3f40ec6d	(localVal & ~((uint32_t)0x0FFFFFFF)) == 0
 3f40ec97	acl_par->nb_prog > 0
 3f40ecac	(EM_BT_RXDESC_OFFSET + ld_env.curr_rxdesc_index * REG_EM_BT_RXDESC_SIZE) == bt_et_currentrxdescptr_currentrxdescptr_getf()
+3f40ed28	d_inq.c
 3f40ed30	ld_sched.c
 3f40ed40	);llc.c
 3f40ed48	EE elt %p, ts %u, %d 
@@ -1807,12 +1827,14 @@
 3f40f057	(((uint16_t)nextptr << 0) & ~((uint16_t)0x00007FFF)) == 0
 3f40f091	ram_lld_pdu_tx_flush
 3f40f0a6	lld_pdu_get_tx_flush_nb
+3f40f0c0	m_hci.c
 3f40f0c8	( ( ( (en_cmd->enable) << (LLM_RPA_RENEW_TIMER_EN_LSB) ) & ( ~(LLM_RPA_RENEW_TIMER_EN_MASK) ) ) ) == 0
 3f40f12f	llm_le_env.advertising_params
 3f40f153	llm_le_env.scanning_params
 3f40f16e	param->pk_payload_type < PAYL_END
 3f40f190	(((uint16_t)txtype << 0) & ~((uint16_t)0x0000000F)) == 0
 3f40f1c9	(((uint16_t)txrxadd << 7) & ~((uint16_t)0x00000080)) == 0
+3f40f206	_util.c
 3f40f20e	ACL Link Number[%d], Mask other ACL Links 
 3f40f239	lm_env.local_name
 3f40f24b	lm_task.c
@@ -2944,6 +2966,7 @@
 3f419e78	netconn_drain
 3f419e86	netconn_free
 3f419e93	netconn_alloc
+3f419ea2	ecv_tcp
 3f419eaa	sent_tcp
 3f419eb3	lwip_netconn_do_close_internal
 3f419ed2	lwip_netconn_do_writemore
@@ -3493,20 +3516,45 @@
 3f41f2d4	TLS-ECDH-ECDSA-WITH-AES-128-GCM-SHA256
 3f41f2fb	TLS-ECDH-ECDSA-WITH-AES-256-CBC-SHA384
 3f41f322	TLS-ECDH-ECDSA-WITH-AES-256-GCM-SHA384
+3f420198	192-CCM
+3f4201a4	256-GCM
+3f4201b0	192-GCM
+3f4201bc	128-GCM
 3f4201c4	AES-256-XTS
+3f4201d4	128-XTS
 3f4201dc	AES-256-CTR
+3f4201ec	192-CTR
 3f4201f4	AES-128-CTR
+3f420204	256-OFB
+3f420210	192-OFB
+3f42021c	128-OFB
 3f420224	AES-256-CFB128
+3f42023a	-CFB128
 3f420242	AES-128-CFB128
+3f420255	256-CBC
+3f420261	192-CBC
+3f42026d	128-CBC
+3f420279	256-ECB
+3f420285	192-ECB
+3f420294	-ECB
+3f420686	cp521r1
 3f42068e	brainpoolP512r1
+3f4206a0	cp384r1
 3f4206a8	brainpoolP384r1
+3f4206ba	cp256r1
+3f4206c4	cp256k1
 3f4206cc	brainpoolP256r1
+3f4206de	cp224r1
 3f4206e8	cp224k1
+3f4206f2	cp192r1
+3f4206fc	cp192k1
 3f421154	Proc-Type: 4,ENCRYPTED
 3f42116b	DEK-Info: AES-
 3f42117a	DEK-Info: AES-128-CBC,
 3f421191	DEK-Info: AES-192-CBC,
 3f4211a8	DEK-Info: AES-256-CBC,
+3f4211d3	RSA-alt
+3f4211e2	C_DH
 3f42130d	-----END RSA PRIVATE KEY-----
 3f42132b	-----BEGIN RSA PRIVATE KEY-----
 3f42134b	-----END EC PRIVATE KEY-----
@@ -3521,9 +3569,11 @@
 3f421933	PBE with SHA1 and 2-Key 3DES
 3f421959	hmacSHA1
 3f421962	HMAC-SHA-1
+3f421979	cSHA224
 3f421981	HMAC-SHA-224
 3f421997	hmacSHA256
 3f4219a2	HMAC-SHA-256
+3f4219bb	cSHA384
 3f4219c3	HMAC-SHA-384
 3f4219d9	hmacSHA512
 3f4219e4	HMAC-SHA-512
@@ -3532,12 +3582,15 @@
 3f421a2d	id-sha256
 3f421a41	id-sha384
 3f421a55	id-sha512
+3f421a7a	de3-cbc
+3f421a87	DE3-CBC
 3f421aab	brainpool256r1
 3f421ac4	brainpool384r1
 3f421add	brainpool512r1
 3f421af6	rsaEncryption
 3f421b0c	id-ecPublicKey
 3f421b1b	Generic EC key
+3f421b30	id-ecDH
 3f421b38	EC key for ECDH
 3f421b52	md5WithRSAEncryption
 3f421b67	RSA with MD5
@@ -3754,6 +3807,7 @@
 3f42386e	ieee80211_beacon
 3f42387f	ieee80211_handshake
 3f423893	ieee80211_chm_dwell
+3f4238ae	11_auth
 3f4238b6	ieee80211_assoc
 3f4238c6	ieee80211_sta_try_sa_query
 3f4238e1	ieee80211_sta_sa_query_timeout
@@ -3770,6 +3824,7 @@
 3f42398d	PA3-SAE
 3f423996	API-PSK
 3f42399e	WAPI-CERT
+3f4239e7	ction.c
 3f4239f0	\6\6\6\
 3f4239f8	lmac.c
 3f423a17	@lmacTxDone
@@ -3925,6 +3980,7 @@
 3ffc0d15	ld_sscan.c
 3ffc0d20	ld_page.c
 3ffc0d2b	d_inq.c
+3ffc0d37	sb_rx.c
 3ffc0d3f	ld_acl.c
 3ffc0d48	ASSERT_ERR(%s), in %s at line %d 
 3ffc0d6a	ld_csb_rx.c.c
@@ -3939,6 +3995,7 @@
 3ffc0ec4	FEX %d %d 
 3ffc0f11	ELx200 
 3ffc0f28	ELx20000 
+3ffc0f33	Lx2000 
 3ffc0f3d	x18000 
 3ffc0f45	ELx10000 
 3ffc0f50	Lx8000 
@@ -4132,5 +4189,6 @@
 3ffc46a0	chip_generic
 3ffc4832		@winbond
 40085750	{R@?6A
+400d15a8	bq@? 
 4011a364	{R@?6A
 40125868	{R@?6a
