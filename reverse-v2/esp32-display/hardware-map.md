@@ -109,10 +109,49 @@ The framebuffer is four 16-bit words at `0x3ffc5ac0`. (An earlier note in this f
 display task — that was wrong; this task is created through a different call than the eight plain
 `xTaskCreate` sites.)
 
-What is **not** recovered is which bit lights which segment. That mapping is behind the driver
-object's vtable, built at run time rather than stored as a table, and it is the one thing that is
-quicker to get on the bench than out of the image: with our own firmware, walk a single bit through
-the 16-bit word and watch which segment lights.
+### The segment encoding — recovered
+
+There is no font table in the image because the codes are **immediates in the instruction stream**.
+The digit renderer is a chain of compares, each clearing the bits it does not need and OR-ing in its
+pattern:
+
+```asm
+400e0102  beqi   a3, 0x1, ...      ; dispatch on the digit
+400e0105  movi   a2, -0x41         ; clear segment g
+400e0108  and    a8, a8, a2
+400e010b  movi.n a2, 0x3f          ; digit 0 -> 0x3F
+400e010d  or     a8, a8, a2
+```
+
+Collected across the chain:
+
+| Digit | Code | Digit | Code |
+|---|---|---|---|
+| 0 | `0x3F` | 5 | `0x6D` |
+| 1 | `0x06` | 6 | `0x7D` |
+| 2 | `0x5B` | 7 | `0x07` |
+| 3 | `0x4F` | 8 | `0x7F` |
+| 4 | `0x66` | 9 | `0x6F` |
+
+That is the **standard common-cathode table**, so the bit order is the ordinary one:
+
+```
+bit 0 = a,  bit 1 = b,  bit 2 = c,  bit 3 = d,  bit 4 = e,  bit 5 = f,  bit 6 = g
+bit 7 = decimal point            (cleared by the blank path, which ANDs with 0x80)
+bit 8 = colon                    (set/cleared on its own by FUN_400e007c, mask 0x100)
+```
+
+Blanking a position ANDs the word with `0xFF80`, i.e. it wipes the seven segments and the dot while
+leaving the higher bits alone — more evidence that the bits above 8 are separate indicators.
+
+So the whole panel is now specified well enough to write from scratch:
+
+```
+VSPI: MOSI GPIO26, SCLK GPIO14, 400 kHz, half-duplex 3-wire, no hardware CS
+per digit:  GPIO2 low -> one 16-bit word, MSB first -> GPIO2 high
+word:       bits 0..6 segments a..g (standard), bit 7 dot, bit 8 colon
+cycle:      four digits, 2 ms each
+```
 
 Above that sits a small class with a vtable. `FUN_400d9944(char *s)` is the public "show" call: it
 takes a **four-character string** and, per position 1..4,
