@@ -19,15 +19,69 @@ The firmware keeps `__FILE__` paths, which name the modules it is built from:
 
 Two of these change the picture of what this board is.
 
-## The board carries a sub-GHz radio — CMT2300A
+## The rain sensor is the pair of springs, J3 and J4
 
-`ft-rf-1` in the factory-test set is neither Wi-Fi nor BLE. It is a **HopeRF CMT2300A** transceiver,
-and the firmware switches it between bands: `RF mode:NO`, `RF mode:868`, `RF mode:915`.
+The two conical compression springs at the top-left of the component side, each landing on a single
+pad, are the **rain-sensor electrodes** (confirmed against the hardware). They press against the
+contact plate in the housing, and the firmware reads the resistance between them through the ADC —
+which is why the logs say `rain adc value:%d` rather than reporting a switch.
+
+## The sub-GHz radio is in the firmware but NOT on this board
+
+`ft-rf-1` in the factory-test set is neither Wi-Fi nor BLE. It is a **HopeRF CMT2300A** transceiver
+on the SPI bus, and the firmware switches it between bands: `RF mode:NO`, `RF mode:868`,
+`RF mode:915`.
 
 What it is for shows up in the log strings: `RF open Wireless Charge` / `RF close Wireless Charge`,
 and in NVS the driver keeps a pair of pairing seeds — `STA_seed` and `MOW_seed`
-(`nvs_set_u16(seed_nvs_handler, "STA_seed", *s_seed)`). So the display board is the node that talks
-to the charging station over the air and holds the mower↔station pairing.
+(`nvs_set_u16(seed_nvs_handler, "STA_seed", *s_seed)`). So in the models that have it, this board is
+the node that talks to the charging station over the air and holds the mower↔station pairing.
+
+**Our board does not have the chip.** Both sides of the PCB were gone over: there is no transceiver
+package, no crystal for one, no matching network, and no second antenna. The single antenna is the
+black whip on the coax that disappears under the glue at the module's edge — that is the U.FL feed
+of the ESP32-WROOM-32UE, i.e. Wi-Fi/BLE. Nor is there an unpopulated footprint waiting for a radio.
+
+This is consistent with the firmware itself: `RF mode:NO` exists as a first-class option beside 868
+and 915, and the mode is selected in the main state machine. `Display_esp32` is one image shipped
+across a product family, and this unit is a build of that family without the radio.
+
+Practical consequence: **do not go looking for a sub-GHz link on this hardware.** The pins the RF
+driver configures (GPIO23, GPIO4, GPIO35) are free on our board.
+
+## How the segment display is actually driven — decoded
+
+The bottom of the stack is three small functions, and together they say exactly how to talk to the
+panel:
+
+```c
+gpio_set_level(2, 0);                       // FUN_400e6f44 — latch down
+                                            // FUN_400e6f54 — one 16-bit word out
+trans.length  = 0x10;                       //   16 bits
+trans.flags   = 1;                          //   payload lives in the descriptor
+trans.tx_data = bswap16(value);             //   byte-swapped, so MSB goes out first
+spi_device_polling_transmit(tube_handle, &trans);
+gpio_set_level(2, 1);                       // FUN_400e6f8c — latch up, data appears
+```
+
+So: **GPIO2 is the latch (RCLK/STB) of the shift-register chain**, and each refresh is a single
+**16-bit** word over SPI — eight bits of segments and eight of digit select, which is what the
+SOIC-16 packages are there for.
+
+Above that sits a small class with a vtable. `FUN_400d9944(char *s)` is the public "show" call: it
+takes a **four-character string** and, per position 1..4,
+
+```c
+if (c >= '0' && c <= '9') digit(pos, c - '0');   // FUN_400d8618 -> vtable[0x20]
+else                      symbol(pos, c);        // FUN_400d85ec -> vtable[0x24]
+```
+
+That second branch is the answer to where `Err` comes from: letters are not digits, so they go out
+through the symbol method. The panel is fed plain ASCII and the driver decides how to render it,
+which is also why **there is no font table in the image** — the mapping lives behind the vtable,
+built at run time, not in a const array.
+
+`88888888` and `tube scan` sit in the string table as the panel's self-test patterns.
 
 ## The segment display is on SPI, not on bit-banged pins
 
@@ -50,12 +104,13 @@ constant arguments (`FUN_4012cf40` and `FUN_4012d0e8` respectively, both identif
 |---|---|---|
 | **GPIO17** | out | UART1 TX — the J2 link to the mainboard |
 | **GPIO16** | in | UART1 RX — the J2 link |
-| **GPIO23** | out | CMT2300A chip select, driven high at init |
-| **GPIO4** | out | CMT2300A second chip select (the part has CSB and FCSB) |
-| **GPIO35** | in | input from the RF section — input-only pad on the ESP32, consistent with the radio's interrupt line |
-| **GPIO18** + **GPIO5** | out | driven as a pair from one function inside the RF driver's neighbourhood |
-| **GPIO27** | out | driven from a boolean; called from four places in the settings code |
-| **GPIO2** | out | driven low by a pair of functions near the RF HAL |
+| **GPIO2** | out | **segment-display latch** (RCLK/STB of the shift-register chain) |
+| **GPIO27** | out | **buzzer** — pulsed three times with 500 ms gaps on the fault path, and driven from the key/settings code |
+| **GPIO23** | out | CMT2300A chip select — **not populated on our board** |
+| **GPIO4** | out | CMT2300A second chip select (CSB/FCSB) — not populated |
+| **GPIO35** | in | CMT2300A interrupt line — not populated (input-only pad) |
+| **GPIO18** + **GPIO5** | out | driven as a pair from inside the RF driver — unidentified, and moot if the radio is absent |
+| **J3 / J4** | — | rain-sensor electrodes (springs), read through the ADC |
 
 The J2 link is fully characterised:
 
