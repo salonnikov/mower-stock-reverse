@@ -87,10 +87,9 @@ dev.queue_size     = 1;
 spi_bus_add_device(2, &dev, &handle);
 ```
 
-**Half-duplex 3-wire** means the data line is bidirectional — the same wire carries segment data out
-and can be read back, which is how this class of panel driver returns the key state. That, plus the
-`tube scan` string and `KeyNum = %d`, is why no GPIO is ever configured for the buttons: **the keys
-are scanned through the display chip, not wired to the ESP32**.
+**Half-duplex 3-wire** means the data line is bidirectional, so the bus *could* read back — but
+nothing in the image ever does: the tube handle is used by exactly one function, and that one only
+writes.
 
 ### The refresh loop
 
@@ -202,7 +201,8 @@ constant arguments (`FUN_4012cf40` and `FUN_4012d0e8` respectively, both identif
 | **GPIO23** | out | CMT2300A chip select — **not populated on our board** |
 | **GPIO4** | out | CMT2300A second chip select (CSB/FCSB) — not populated |
 | **GPIO35** | in | CMT2300A interrupt line — not populated (input-only pad) |
-| **GPIO18** + **GPIO5** | out | driven as a pair from inside the RF driver — unidentified, and moot if the radio is absent |
+| **GPIO18** + **GPIO5** | out | **rain-sensor electrode drive**, pushed in opposite phase (anti-electrolysis) |
+| **GPIO36** | in (ADC1_CH0) | **rain-sensor measurement** (SENSOR_VP) |
 | **J3 / J4** | — | rain-sensor electrodes (springs), read through the ADC |
 
 The J2 link is fully characterised:
@@ -224,12 +224,43 @@ named `DB`. J1, by contrast, is UART0 on the default pads — the console and th
 
 There is **no display task** — the segments are not serviced by a thread of their own.
 
-## Rain sensor
+## The buttons are not wired to the ESP32
 
-Analogue, not a dry contact: `rain adc value:%d`, `rain sensor : %d`, its own `rain detect thread`,
-an error path `initialze robot rain failed`. Debounced in software — `rain_en`, `rain_delay`,
-`rain_delay_set`, `rain_delay_left`, `rain_state`, `rain_status` — with robot states `rain dock`,
-`rain wait`, `rain delay`.
+This one is worth stating flatly, because it decides how much of the panel we can reuse.
+
+**The firmware never reads a GPIO input.** `GPIO_IN_REG` (`0x3ff4403c`) does not appear anywhere in
+the image, not once. The only pin ever configured as an input is GPIO35, and that is the radio's
+interrupt line. The display's SPI device is opened half-duplex 3-wire, which would allow reading the
+keys back through the panel driver, but no code does it — the tube handle is write-only.
+
+So the four switches on the board go **out through the harness** — the pads marked `OK`, `STA`, `ON`
+and the two arrows — and it is the mainboard that reads them. The display learns about a press second
+hand, over the UART1 link, which is where its `KeyNum = %d` comes from.
+
+Consequence for our own firmware: **the buttons will not work as-is.** They are physically on this
+PCB, but their signals leave for the mainboard rather than reaching the ESP32. They have to be
+jumpered from the harness pads to spare pins — and GPIO23, GPIO4 and GPIO35 are free precisely
+because the radio those were meant for is not fitted.
+
+## Rain sensor — the whole chain
+
+Analogue, and driven, not merely sampled:
+
+```c
+FUN_400df0e0(1):  gpio_set_level(18, 1);  gpio_set_level(5, 0);   // one polarity
+FUN_400df0e0(2):  gpio_set_level(18, 0);  gpio_set_level(5, 1);   // the other
+value = adc1_get_raw(0);                                          // ADC1 channel 0 = GPIO36
+```
+
+**GPIO18 and GPIO5 are the electrode drive**, pushed in opposite phase so the pair is excited with
+alternating polarity — the standard way to keep a resistive rain sensor from electrolysing itself.
+The measurement is **ADC1 channel 0, i.e. GPIO36 (SENSOR_VP)**, and the reading is smoothed by a
+running average (`acc += new - avg; avg = acc >> 2`) before being compared against a threshold with a
+counter that saturates at 15.
+
+Around it: its own `rain detect thread`, an error path `initialze robot rain failed`, the settings
+`rain_en`, `rain_delay`, `rain_delay_set`, `rain_delay_left`, `rain_state`, `rain_status`, and the
+robot states `rain dock`, `rain wait`, `rain delay`.
 
 ## Factory test mode
 
