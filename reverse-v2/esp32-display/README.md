@@ -82,12 +82,27 @@ decompiler binaries for linux_x86_64 / mac_* / win_x86_64 but none for linux_arm
 image comes up with no decompiler at all. On Apple Silicon this needs Rosetta enabled in Docker
 Desktop.
 
+## Where to start reading
+
+The firmware is stripped, so everything is `FUN_xxxxxxxx`, but the string references are intact —
+**2330 `PTR_s_*` symbols** in the pseudo-C, because the Xtensa loader already resolves the `l32r`
+literal pools. Grepping `decompiled_all.c` for a string is therefore a workable way in. Useful
+anchors found so far:
+
+| Address | What it looks like |
+|---|---|
+| `FUN_400e0d64` | the vendor's main task: a 1573-byte state machine, and the only function touching `/dev/uart/1` — i.e. **the J2 link to the mainboard**, which is UART1, not the UART0 that J1 exposes |
+| `FUN_400d9ddc` | config load/store against NVS: `snk_mqtt`, `zone_en`, `zone_ex` and the matching "… failed" messages |
+| `FUN_400db588` | the lighting / multi-zone settings: `led_end`, `…ltizone` |
+| `FUN_400dabf0` | a second NVS cluster, eight distinct failure messages |
+
 ## Open
 
-- **Function names.** The firmware is stripped: 6155 of 6192 functions are `FUN_xxxxxxxx`. The
-  image does carry IDF assert material — source paths such as `/IDF/components/vfs/vfs_uart.c`
-  next to identifiers such as `uart_write` — so a second pass could recover real names for a good
-  part of the IDF-side code.
+- **Function names cannot be recovered from asserts.** It was worth checking, and the answer is
+  no: the release is built with `NDEBUG`, so the whole image holds only **10** assert sites (the
+  heap ones, in DRAM). The IDF-side identifiers visible in `strings.txt` are not tied to the
+  functions that implement them.
 - A handful of functions hit `Unable to resolve constructor` warnings — Xtensa opcodes the SLEIGH
   spec does not model. They decompile, but those spots should be read as assembly.
-- What actually travels over J2 (the link to the mainboard) has not been worked out.
+- **What actually travels over J2 has not been worked out.** `FUN_400e0d64` is the place to start;
+  the frame format, and how it lines up with the mainboard's own display link, are still unknown.
