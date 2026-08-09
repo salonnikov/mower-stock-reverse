@@ -316,3 +316,54 @@ at a time and watch what the board does.
   follow. The pins above were recovered because those particular calls pass constants.
 - The pins for the buttons and the buzzer.
 - Module attribution for GPIO18/GPIO5, GPIO27 and GPIO2 is by neighbourhood, not proven.
+
+---
+
+## Verified on the hardware (2026-08-10)
+
+Our own firmware now drives this board, which settles the parts that could only
+be inferred from the image — and corrects one thing the image hid.
+
+**The display needs its chip select.** The device config carries
+`spics_io_num = 0x20`, i.e. **GPIO32**. Miss it and the panel ignores the bus
+entirely: data clocks out, nothing latches, and the board reads as dead. That was
+the longest detour in this bring-up, so it is worth stating loudly.
+
+Working set, all confirmed by lighting real segments:
+
+```
+bus     HSPI (host 1), MOSI GPIO25, SCLK GPIO33, 400 kHz
+select  GPIO32 low across the frame
+latch   GPIO2 pulsed around the transfer
+GPIO26  left LOW — the factory drives it high during init and drops it at the end
+frame   16 bits, most significant byte first
+```
+
+Word layout, established a bit at a time:
+
+| Bits | Meaning |
+|---|---|
+| 0..6 | segments a..g, ordinary order |
+| 7 | decimal point |
+| 8 | colon |
+| 9 | nothing |
+| 10 | digit 4 — and it also lights digit 3's dot |
+| 11 | digit 3 |
+| 12 | digit 2 |
+| 13 | digit 1 |
+| 14, 15 | nothing |
+
+The selects are neither in position order nor contiguous, and bit 10 dragging in
+a neighbour's dot is the kind of thing that comes of laying a panel out for
+convenience. Guessing this from the image was never going to work; it took eight
+probes on the glass.
+
+**Three of the four buttons are read by the panel**, on GPIO22, GPIO21 and
+GPIO19 — they debounce and beep. `ON` is not among them, which confirms it
+leaves on the harness as a power-on request to the mainboard rather than being
+read here.
+
+One practical note for anyone repeating this: the board **browns out on a
+USB-TTL's 3.3 V regulator** once Wi-Fi is up. The symptom is a reset loop with
+`Brownout detector was triggered` and no console output at all. Feed it from
+something that can actually source a few hundred milliamps.
